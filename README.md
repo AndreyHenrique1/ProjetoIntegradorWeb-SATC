@@ -98,6 +98,36 @@ A arquitetura do sistema será definida e documentada durante o desenvolvimento,
 
 ---
 
+## Execução do projeto
+
+### Pré-requisitos
+
+- Node.js instalado, preferencialmente a versão LTS;
+- npm instalado junto com o Node.js;
+- MySQL Server instalado e em execução.
+
+### Instalação das dependências
+
+A partir da raiz do repositório, acesse a pasta do back-end:
+
+```bash
+cd backend
+```
+
+Instale as dependências do projeto:
+
+```bash
+npm install
+```
+
+Para rodar o projeto:
+
+```bash
+npm run dev
+```
+
+---
+
 ## Desenvolvimento
 
 O projeto utiliza **Git e GitHub** para controle de versão e colaboração entre os integrantes.
