@@ -5,6 +5,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 import loginRoutes from "./routes/loginRoutes.js";
 import equipeRoutes from "./routes/equipeRoutes.js";
 import tipoVeiculoRoutes from "./routes/tipoVeiculoRoutes.js";
+import veiculoRoutes from "./routes/veiculoRoutes.js";
 
 // Criar a aplicação express
 const app = express();
@@ -27,6 +28,9 @@ app.use("/Dashboard", dashboardRoutes);
 
 // Rota Tipo de Veículo
 app.use("/contatos/tipoVeiculo", tipoVeiculoRoutes);
+
+// Rota de Veículo
+app.use("/contatos/veiculo", veiculoRoutes);
 
 
 
