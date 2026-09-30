@@ -89,12 +89,13 @@ A arquitetura do sistema será definida e documentada durante o desenvolvimento,
 
 ## Tecnologias
 
-| Camada         | Tecnologia   |
+| Camada | Tecnologia |
 | :------------- | :----------- |
-| Front-end      | `A definir`  |
-| Back-end       | Node.js, Express |
-| Banco de dados | `A definir`  |
-| Versionamento  | Git / GitHub |
+| Front-end | A definir |
+| Back-end | Node.js, Express 5 |
+| Banco de dados | MySQL 8, driver mysql2 |
+| Validação de documentos | @fnando/cpf, @fnando/cnpj |
+| Versionamento | Git / GitHub |
 
 ---
 
@@ -154,7 +155,6 @@ fix: corrige validação do formulário
 docs: atualiza documentação
 refactor: reorganiza estrutura da API
 ```
-
 ---
 
 ## Documentação

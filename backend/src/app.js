@@ -7,6 +7,7 @@ import equipeRoutes from "./routes/equipeRoutes.js";
 import tipoVeiculoRoutes from "./routes/tipoVeiculoRoutes.js";
 import veiculoRoutes from "./routes/veiculoRoutes.js";
 import jornalistaRoutes from "./routes/jornalistaRoutes.js";
+import clienteRoutes from "./routes/clienteRoutes.js";
 
 // Criar a aplicação express
 const app = express();
@@ -35,6 +36,9 @@ app.use("/contatos/veiculo", veiculoRoutes);
 
 // Rota de Jornalista
 app.use("/contatos/jornalista", jornalistaRoutes);
+
+// Rota de Cliente
+app.use("/contatos/cliente", clienteRoutes);
 
 
 
