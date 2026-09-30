@@ -1,9 +1,10 @@
 import express from "express";
 import cors from "cors";
 import cargoRoutes from "./routes/cargoRoutes.js";
-import dashboardRoutes from "./routes/dashboardRoutes.js"
-import loginRoutes from "./routes/loginRoutes.js"
-import equipeRoutes from "./routes/equipeRoutes.js"
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import loginRoutes from "./routes/loginRoutes.js";
+import equipeRoutes from "./routes/equipeRoutes.js";
+import tipoVeiculoRoutes from "./routes/tipoVeiculoRoutes.js";
 
 // Criar a aplicação express
 const app = express();
@@ -23,6 +24,9 @@ app.use("/usuario/cargo", cargoRoutes);
 
 //Rota do dashboard
 app.use("/Dashboard", dashboardRoutes);
+
+// Rota Tipo de Veículo
+app.use("/contatos/tipoVeiculo", tipoVeiculoRoutes);
 
 
 
