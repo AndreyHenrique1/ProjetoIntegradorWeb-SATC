@@ -9,6 +9,7 @@ import veiculoRoutes from "./routes/veiculoRoutes.js";
 import jornalistaRoutes from "./routes/jornalistaRoutes.js";
 import clienteRoutes from "./routes/clienteRoutes.js";
 import tagRoutes from "./routes/tagRoutes.js";
+import compromissoRoutes from "./routes/compromissoRoutes.js";
 
 // Criar a aplicação express
 const app = express();
@@ -43,6 +44,9 @@ app.use("/contatos/cliente", clienteRoutes);
 
 // Rota de Tag
 app.use("/agenda/tag", tagRoutes);
+
+// Rota de Compromisso (Tela de agenda)
+app.use("/agenda/compromisso", compromissoRoutes);
 
 
 app.listen(PORT, () => {
