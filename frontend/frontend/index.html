@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard · Alfa Comunicação e Conteúdo</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body data-raiz="" data-ativo="dashboard">
+  <header class="topbar" id="topbar"></header>
+
+  <div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="content">
+      <div class="notice" id="offline" hidden>
+        Não consegui falar com a API em <code>localhost:3000</code>. Exibindo dados de exemplo — confira se o back-end está rodando.
+      </div>
+
+      <div class="page-head">
+        <h1>Dashboard</h1>
+        <form class="filter" id="filtro">
+          <label for="data" class="sr">Data</label>
+          <input type="date" id="data">
+          <button class="btn" type="submit">Filtrar</button>
+        </form>
+      </div>
+
+      <section class="stats" aria-label="Indicadores">
+        <article class="stat">
+          <span class="stat-ico blue"><svg class="ico"><use href="#i-chat"/></svg></span>
+          <p>Atendimentos em aberto</p><strong id="sAbertos">–</strong>
+        </article>
+        <article class="stat">
+          <span class="stat-ico green"><svg class="ico"><use href="#i-clock"/></svg></span>
+          <p id="lHoras">Horas hoje</p><strong id="sHoras">–</strong>
+        </article>
+        <article class="stat">
+          <span class="stat-ico red"><svg class="ico"><use href="#i-cal"/></svg></span>
+          <p id="lComp">Compromissos hoje</p><strong id="sComp">–</strong>
+        </article>
+      </section>
+
+      <div class="cols">
+        <section class="card" aria-labelledby="tComp">
+          <div class="card-head">
+            <h2 id="tComp">Compromissos hoje</h2>
+            <a href="pages/agenda/agenda.html">Ver agenda</a>
+          </div>
+          <ul class="comp-list" id="compList" aria-live="polite"><li class="empty">Carregando…</li></ul>
+        </section>
+
+        <section class="card" aria-labelledby="tCont">
+          <div class="card-head"><h2 id="tCont">Contatos ativos</h2></div>
+          <ul class="contatos">
+            <li><span>Clientes cadastrados</span><b id="cCli">–</b></li>
+            <li><span>Funcionários cadastrados</span><b id="cFun">–</b></li>
+            <li><span>Veículos cadastrados</span><b id="cVei">–</b></li>
+          </ul>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/utils/formatters.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api/http.js"></script>
+  <script src="js/api/clienteApi.js"></script>
+  <script src="js/api/veiculoApi.js"></script>
+  <script src="js/api/equipeApi.js"></script>
+  <script src="js/api/compromissoApi.js"></script>
+  <script src="js/api/pendenciaApi.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/pages/dashboard.js"></script>
+</body>
+</html>

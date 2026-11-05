@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clientes · Alfa Comunicação e Conteúdo</title>
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/layout.css">
+  <link rel="stylesheet" href="../../css/components.css">
+</head>
+<body data-raiz="../../" data-ativo="clientes">
+  <header class="topbar" id="topbar"></header>
+
+  <div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="content">
+      <div class="page-head">
+        <h1>Clientes</h1>
+        <button class="btn" id="btnNovo" type="button">Novo cliente</button>
+      </div>
+
+      <div class="toolbar">
+        <div class="busca">
+          <label for="busca" class="sr">Buscar cliente</label>
+          <input type="search" id="busca" placeholder="Buscar por nome, CPF/CNPJ ou e-mail">
+        </div>
+        <label for="filtroStatus" class="sr">Status</label>
+        <select id="filtroStatus">
+          <option value="todos">Todos os status</option>
+          <option value="ativos">Somente ativos</option>
+          <option value="inativos">Somente inativos</option>
+        </select>
+        <span class="total" id="total" aria-live="polite"></span>
+      </div>
+
+      <section class="card" aria-label="Lista de clientes">
+        <div class="tabela-wrap">
+          <table class="tabela">
+            <thead>
+              <tr><th>Cliente</th><th>CPF / CNPJ</th><th>Telefone</th><th>Status</th><th><span class="sr">Ações</span></th></tr>
+            </thead>
+            <tbody id="corpo"></tbody>
+          </table>
+        </div>
+        <div class="estado" id="estado">Carregando clientes…</div>
+      </section>
+    </main>
+  </div>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <!-- Criar / editar -->
+  <dialog class="modal" id="modal" aria-labelledby="modalTitulo">
+    <form id="form" novalidate>
+      <h2 id="modalTitulo">Novo cliente</h2>
+      <p class="sub">Campos com * são obrigatórios.</p>
+      <p class="erro-form" id="erroForm" role="alert" hidden></p>
+
+      <div class="grid-form">
+        <div class="field full">
+          <label for="nome">Razão social ou nome *</label>
+          <input id="nome" name="nome" autocomplete="off" required>
+        </div>
+        <div class="field">
+          <label for="doc">CPF ou CNPJ *</label>
+          <input id="doc" name="doc" inputmode="numeric" placeholder="000.000.000-00" required>
+        </div>
+        <div class="field">
+          <label for="tel">Telefone *</label>
+          <input id="tel" name="tel" type="tel" inputmode="tel" placeholder="(00) 00000-0000" required>
+        </div>
+        <div class="field full">
+          <label for="email">E-mail *</label>
+          <input id="email" name="email" type="email" placeholder="contato@empresa.com" required>
+        </div>
+        <div class="field full">
+          <label for="endereco">Endereço *</label>
+          <input id="endereco" name="endereco" autocomplete="off" required>
+        </div>
+        <div class="field full">
+          <label for="site">Site ou redes sociais</label>
+          <input id="site" name="site" autocomplete="off" placeholder="www.empresa.com.br ou @empresa">
+        </div>
+        <div class="field full">
+          <label for="obs">Observações</label>
+          <textarea id="obs" name="obs"></textarea>
+        </div>
+        <label class="check full"><input type="checkbox" id="ativo" checked> Cliente ativo</label>
+      </div>
+
+      <div class="modal-acoes">
+        <button type="button" class="btn sec" id="btnCancelar">Cancelar</button>
+        <button type="submit" class="btn" id="btnSalvar">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Excluir -->
+  <dialog class="modal" id="modalExcluir" aria-labelledby="excluirTitulo">
+    <form method="dialog" id="formExcluir" style="padding:28px">
+      <h2 id="excluirTitulo">Excluir cliente?</h2>
+      <p class="sub" id="excluirTexto"></p>
+      <p class="erro-form" id="erroExcluir" role="alert" hidden></p>
+      <div class="modal-acoes">
+        <button type="button" class="btn sec" id="btnExcluirCancelar">Cancelar</button>
+        <button type="submit" class="btn perigo" id="btnExcluirOk">Excluir</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="../../js/config.js"></script>
+  <script src="../../js/utils/formatters.js"></script>
+  <script src="../../js/utils/masks.js"></script>
+  <script src="../../js/utils/ui.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/api/http.js"></script>
+  <script src="../../js/api/clienteApi.js"></script>
+  <script src="../../js/layout.js"></script>
+  <script src="../../js/pages/clientes.js"></script>
+</body>
+</html>

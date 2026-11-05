@@ -1,0 +1,78 @@
+/* Componentes reutilizáveis em várias telas. */
+.btn{font:inherit;font-weight:700;font-size:14px;padding:10px 22px;border:0;border-radius:10px;background:var(--azul);color:#fff;cursor:pointer;transition:background .15s,transform .1s}
+.btn:hover{background:var(--azul-esc)}.btn:active{transform:scale(.97)}
+.notice{background:#fff4e0;color:#8a5200;border-radius:12px;padding:12px 16px;margin-bottom:20px;font-size:14px;border:1px solid #f6d9a3}
+
+.card{background:var(--card);border-radius:var(--raio);box-shadow:var(--sombra);padding:24px}
+.card-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.card-head h2{font-size:18px;font-weight:700;letter-spacing:-.01em}
+.card-head a{font-size:14px;font-weight:600;color:var(--azul)}
+.card-head a:hover{text-decoration:underline}
+
+.badge{flex:none;width:124px;text-align:center;padding:6px 14px;border-radius:99px;font-size:13px;font-weight:700;background:var(--cor,var(--azul))}
+.empty{display:block!important;text-align:center;color:var(--suave);padding:36px 0!important}
+
+/* ---- Botões extras ---- */
+.btn.sec{background:var(--card);color:var(--texto);border:1px solid var(--linha)}
+.btn.sec:hover{background:var(--fundo)}
+.btn.perigo{background:var(--vermelho)}.btn.perigo:hover{background:#c92a3b}
+.btn.peq{padding:7px 14px;font-size:13px}
+.btn:disabled{opacity:.7;cursor:wait}
+
+/* ---- Barra de busca e filtros ---- */
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.toolbar input,.toolbar select{font:inherit;font-size:14px;padding:11px 14px;border:1px solid var(--linha);border-radius:10px;background:var(--card);color:var(--texto)}
+.toolbar .busca{flex:1;min-width:220px}.toolbar .busca input{width:100%}
+.toolbar .total{margin-left:auto;color:var(--suave);font-size:14px}
+
+/* ---- Tabela ---- */
+.tabela-wrap{overflow-x:auto}
+.tabela{width:100%;border-collapse:collapse;font-size:15px}
+.tabela th{text-align:left;font-size:13px;color:var(--suave);font-weight:600;padding:0 12px 12px;border-bottom:1px solid var(--linha)}
+.tabela td{padding:14px 12px;border-bottom:1px solid var(--linha);vertical-align:middle}
+.tabela tbody tr:last-child td{border-bottom:0}
+.tabela tbody tr:hover{background:#f8f9fd}
+.tabela td strong{display:block;font-weight:600}
+.tabela td small{color:var(--suave);font-size:13px}
+.tabela .acoes{text-align:right;white-space:nowrap}
+.tabela .acoes .btn+.btn{margin-left:6px}
+.pill{display:inline-block;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:700}
+.pill.ativo{background:#dcf5ea;color:#0b7a50}.pill.inativo{background:#eceff6;color:var(--suave)}
+.estado{text-align:center;color:var(--suave);padding:44px 12px}
+.estado .btn{margin-top:14px}
+
+/* ---- Modal e formulário ---- */
+.modal{margin:auto;border:0;border-radius:20px;padding:0;width:min(580px,calc(100% - 32px));max-height:calc(100vh - 32px);box-shadow:0 24px 64px rgba(11,31,77,.3);color:var(--texto);background:var(--card)}
+.modal::backdrop{background:rgba(11,31,77,.5)}
+.modal form{padding:24px 28px}
+.modal h2{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.modal .sub{color:var(--suave);font-size:14px;margin-bottom:16px}
+.grid-form{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}
+.field label{font-size:14px;font-weight:600}
+.field input,.field textarea{font:inherit;font-size:15px;padding:11px 14px;border:1.5px solid var(--linha);border-radius:10px;background:var(--card);color:var(--texto);width:100%;transition:border-color .15s,box-shadow .15s}
+.field textarea{resize:vertical;min-height:64px;height:64px}
+.field input:focus,.field textarea:focus{outline:0;border-color:var(--azul);box-shadow:0 0 0 4px rgba(35,64,232,.15)}
+.field [aria-invalid="true"]{border-color:var(--vermelho)}
+.field .dica{font-size:12px;color:var(--vermelho)}
+.check{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--azul)}
+.erro-form{background:#fde8eb;color:#a3162a;border-radius:10px;padding:11px 14px;font-size:14px;margin-bottom:16px}
+.modal-acoes{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 12px 32px rgba(11,31,77,.35);z-index:60}
+
+@media (max-width:720px){
+  .grid-form{grid-template-columns:1fr}
+  .tabela thead{display:none}
+  .tabela,.tabela tbody,.tabela tr,.tabela td{display:block;width:100%}
+  .tabela tr{border:1px solid var(--linha);border-radius:12px;padding:6px 14px;margin-bottom:12px}
+  .tabela td{display:flex;justify-content:space-between;gap:16px;border:0;padding:8px 0;text-align:right}
+  .tabela td::before{content:attr(data-label);color:var(--suave);font-size:13px;font-weight:600;text-align:left}
+  .tabela td.acoes{justify-content:flex-end}.tabela td.acoes::before{content:none}
+}
+
+/* ---- Select dentro de formulário ---- */
+.field select{font:inherit;font-size:15px;padding:11px 14px;border:1.5px solid var(--linha);border-radius:10px;background:var(--card);color:var(--texto);width:100%}
+.field select:focus{outline:0;border-color:var(--azul);box-shadow:0 0 0 4px rgba(35,64,232,.15)}
+.field select[aria-invalid="true"]{border-color:var(--vermelho)}

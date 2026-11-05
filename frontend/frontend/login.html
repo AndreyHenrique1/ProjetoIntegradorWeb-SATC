@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar · Alfa Comunicação e Conteúdo</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+  <aside class="brand">
+    <img src="assets/logo.svg" alt="Alfa – comunicação e conteúdo" class="brand-logo">
+    <div class="brand-text">
+      <h2>Sua assessoria, num só lugar.</h2>
+      <ul>
+        <li>Agenda de compromissos e pendências</li>
+        <li>Clientes, jornalistas e veículos organizados</li>
+        <li>Histórico completo de relacionamento</li>
+      </ul>
+    </div>
+    <p class="brand-foot">© Alfa Comunicação e Conteúdo</p>
+  </aside>
+
+  <main class="panel">
+    <form class="card" id="loginForm" novalidate>
+      <h1>Bem-vindo de volta</h1>
+      <p class="sub">Entre com seu e-mail e senha para acessar o sistema.</p>
+
+      <div class="dev" id="devBanner" hidden>Modo desenvolvimento: qualquer e-mail e senha entram enquanto o back-end não tiver autenticação.</div>
+      <p class="erro" id="erro" role="alert" hidden></p>
+
+      <div class="campo">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" autocomplete="username" placeholder="voce@empresa.com" required>
+      </div>
+
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <div class="senha-wrap">
+          <input type="password" id="senha" name="senha" autocomplete="current-password" placeholder="Sua senha" required>
+          <button type="button" id="verSenha" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn" id="entrar">Entrar</button>
+    </form>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api/authApi.js"></script>
+  <script src="js/pages/login.js"></script>
+</body>
+</html>
