@@ -9,6 +9,21 @@
   let editando = null;
   let excluindo = null;
 
+  const TELAS_PERM = ["dashboard","cargos","equipes","clientes","veiculos","jornalistas","historico","agenda"];
+  const permPadrao = () => ({ dashboard:"view", cargos:"edit", equipes:"edit", clientes:"edit", veiculos:"edit", jornalistas:"edit", historico:"edit", agenda:"edit" });
+
+  function lerPermissoesForm() {
+    const p = {};
+    TELAS_PERM.forEach((t) => { const el = $(`perm-${t}`); if (el) p[t] = el.value; });
+    if (p.dashboard === "edit") p.dashboard = "view";
+    return p;
+  }
+
+  function preencherPermissoes(perms) {
+    const p = Object.assign(permPadrao(), perms || {});
+    TELAS_PERM.forEach((t) => { const el = $(`perm-${t}`); if (el) el.value = p[t] || "none"; });
+  }
+
   // ---------- lista ----------
   function filtrados() {
     const q = normalizar($("busca").value.trim());
@@ -96,6 +111,9 @@
       $("tel").value = p.telefone ?? "";
       $("email").value = p.email ?? "";
       $("ativo").checked = !!p.status;
+      preencherPermissoes(p.permissoes);
+    } else {
+      preencherPermissoes(permPadrao());
     }
     $("modal").showModal();
     $("nome").focus();
@@ -130,7 +148,8 @@
       email: $("email").value.trim(),
       telefone: $("tel").value.trim(),
       codCargo: Number($("cargo").value),
-      status: $("ativo").checked
+      status: $("ativo").checked,
+      permissoes: lerPermissoesForm()
     };
     // Na edição, só envia a senha se foi digitada (o back-end rejeita senha vazia)
     if ($("senha").value) corpo.senha = $("senha").value;
@@ -139,8 +158,14 @@
     $("btnSalvar").textContent = "Salvando…";
     try {
       const eraEdicao = !!editando;
-      if (editando) await EquipeApi.atualizar(editando.codigo, corpo);
-      else await EquipeApi.criar(corpo);
+      let res;
+      if (editando) res = await EquipeApi.atualizar(editando.codigo, corpo);
+      else res = await EquipeApi.criar(corpo);
+      if (eraEdicao && editando.codigo === Auth.obter()?.usuario?.codigo && res?.funcionario?.permissoes) {
+        Auth.atualizarUsuario({ permissoes: res.funcionario.permissoes });
+        location.reload();
+        return;
+      }
       $("modal").close();
       Ui.toast(eraEdicao ? "Integrante atualizado com sucesso." : "Integrante cadastrado com sucesso.");
       await carregar();

@@ -85,6 +85,68 @@
           <small class="dica-campo" id="dicaSenha"></small>
         </div>
         <label class="check full"><input type="checkbox" id="ativo" checked> Integrante ativo</label>
+
+        <fieldset class="field full perm-fieldset">
+          <legend>Permissões por tela</legend>
+          <p class="perm-hint">Defina o acesso de cada tela.</p>
+          <div class="perm-grid">
+            <div class="perm-row"><label for="perm-dashboard">Dashboard</label>
+              <select id="perm-dashboard" data-tela="dashboard">
+                <option value="none">Sem acesso</option>
+                <option value="view">Somente visualizar</option>
+              </select>
+            </div>
+            <div class="perm-row"><label for="perm-cargos">Cargos</label>
+              <select id="perm-cargos" data-tela="cargos">
+                <option value="none">Sem acesso</option>
+                <option value="view">Somente visualizar</option>
+                <option value="edit">Visualizar e editar</option>
+              </select>
+            </div>
+            <div class="perm-row"><label for="perm-equipes">Equipes</label>
+              <select id="perm-equipes" data-tela="equipes">
+                <option value="none">Sem acesso</option>
+                <option value="view">Somente visualizar</option>
+                <option value="edit">Visualizar e editar</option>
+              </select>
+            </div>
+            <div class="perm-row"><label for="perm-clientes">Clientes</label>
+              <select id="perm-clientes" data-tela="clientes">
+                <option value="none">Sem acesso</option>
+                <option value="view">Somente visualizar</option>
+                <option value="edit">Visualizar e editar</option>
+              </select>
+            </div>
+            <div class="perm-row"><label for="perm-veiculos">Veículos</label>
+              <select id="perm-veiculos" data-tela="veiculos">
+                <option value="none">Sem acesso</option>
+                <option value="view">Somente visualizar</option>
+                <option value="edit">Visualizar e editar</option>
+              </select>
+            </div>
+            <div class="perm-row"><label for="perm-jornalistas">Jornalistas</label>
+              <select id="perm-jornalistas" data-tela="jornalistas">
+                <option value="none">Sem acesso</option>
+                <option value="view">Somente visualizar</option>
+                <option value="edit">Visualizar e editar</option>
+              </select>
+            </div>
+            <div class="perm-row"><label for="perm-historico">Histórico</label>
+              <select id="perm-historico" data-tela="historico">
+                <option value="none">Sem acesso</option>
+                <option value="view">Somente visualizar</option>
+                <option value="edit">Visualizar e editar</option>
+              </select>
+            </div>
+            <div class="perm-row"><label for="perm-agenda">Agenda</label>
+              <select id="perm-agenda" data-tela="agenda">
+                <option value="none">Sem acesso</option>
+                <option value="view">Somente visualizar</option>
+                <option value="edit">Visualizar e editar</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
       </div>
 
       <div class="modal-acoes">

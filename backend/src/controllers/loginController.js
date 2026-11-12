@@ -13,8 +13,28 @@ const DEV_LOGIN = {
         nome: "Modo Desenvolvedor",
         email: "mododesenvolvedor@volantis.com.br",
         telefone: null,
-        codCargo: null
+        codCargo: null,
+        permissoes: {
+            dashboard: "view", cargos: "edit", equipes: "edit", clientes: "edit",
+            veiculos: "edit", jornalistas: "edit", historico: "edit", agenda: "edit"
+        }
     }
+};
+
+const PERM_DEFAULT = { dashboard: "view", cargos: "edit", equipes: "edit", clientes: "edit", veiculos: "edit", jornalistas: "edit", historico: "edit", agenda: "edit" };
+const TELAS = Object.keys(PERM_DEFAULT);
+
+const normalizarPermissoes = (linhas) => {
+    if (!Array.isArray(linhas)) return { ...PERM_DEFAULT };
+    const out = { ...PERM_DEFAULT };
+    for (const l of linhas) {
+        if (!TELAS.includes(l.modulo)) continue;
+        const ver = l.podeVisualizar === 1 || l.podeVisualizar === true;
+        const ed = l.podeCriarEditar === 1 || l.podeCriarEditar === true;
+        out[l.modulo] = !ver ? "none" : (ed ? "edit" : "view");
+    }
+    if (out.dashboard === "edit") out.dashboard = "view";
+    return out;
 };
 
 export const login = async (req, res) => {
@@ -62,6 +82,11 @@ export const login = async (req, res) => {
             return res.status(401).json({ mensagem: "E-mail ou senha incorretos." });
         }
 
+        const [permRows] = await db.query(
+            "SELECT modulo, podeVisualizar, podeCriarEditar FROM permissaoFuncionario WHERE codFuncionario = ?",
+            [funcionario.codigo]
+        );
+
         const payload = {
             codigo: funcionario.codigo,
             email: funcionario.email,
@@ -77,7 +102,8 @@ export const login = async (req, res) => {
                 nome: funcionario.nome,
                 email: funcionario.email,
                 telefone: funcionario.telefone,
-                codCargo: funcionario.codCargo
+                codCargo: funcionario.codCargo,
+                permissoes: normalizarPermissoes(permRows)
             }
         });
     } catch (error) {

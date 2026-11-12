@@ -35,10 +35,86 @@ const validarStatus = (status) => typeof status === "boolean";
 // Tem que ser maior que 6 caracteres 
 const validarSenha = (senha) => typeof senha === "string" && senha.length >= 6;
 
+const TELAS_PERMISSAO = ["dashboard", "cargos", "equipes", "clientes", "veiculos", "jornalistas", "historico", "agenda"];
+const NIVEIS = new Set(["none", "view", "edit"]);
+
+const normalizarPermissoes = (valor) => {
+    let obj = valor;
+    if (typeof obj === "string") {
+        try { obj = JSON.parse(obj); } catch { obj = {}; }
+    }
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) obj = {};
+    const out = {};
+    for (const tela of TELAS_PERMISSAO) {
+        let nivel = obj[tela];
+        if (!NIVEIS.has(nivel)) nivel = tela === "dashboard" ? "view" : "edit";
+        out[tela] = nivel;
+    }
+    if (out.dashboard === "edit") out.dashboard = "view";
+    return out;
+};
+
+const permissoesParaLinhas = (codFuncionario, permissoes) => {
+    const p = normalizarPermissoes(permissoes);
+    return TELAS_PERMISSAO.map((modulo) => {
+        const nivel = p[modulo];
+        return [codFuncionario, modulo, nivel !== "none", nivel === "edit"];
+    });
+};
+
+const linhasParaPermissoes = (linhas) => {
+    const base = {};
+    for (const tela of TELAS_PERMISSAO) base[tela] = tela === "dashboard" ? "view" : "edit";
+    for (const l of linhas || []) {
+        if (!TELAS_PERMISSAO.includes(l.modulo)) continue;
+        const ver = l.podeVisualizar === 1 || l.podeVisualizar === true;
+        const ed = l.podeCriarEditar === 1 || l.podeCriarEditar === true;
+        base[l.modulo] = !ver ? "none" : (ed ? "edit" : "view");
+    }
+    if (base.dashboard === "edit") base.dashboard = "view";
+    return base;
+};
+
+const salvarPermissoes = async (conn, codFuncionario, permissoes) => {
+    await conn.query("DELETE FROM permissaoFuncionario WHERE codFuncionario = ?", [codFuncionario]);
+    const linhas = permissoesParaLinhas(codFuncionario, permissoes);
+    if (linhas.length) {
+        await conn.query(
+            "INSERT INTO permissaoFuncionario (codFuncionario, modulo, podeVisualizar, podeCriarEditar) VALUES ?",
+            [linhas]
+        );
+    }
+};
+
+const buscarPermissoesMap = async (codigos) => {
+    if (!codigos.length) return new Map();
+    const [rows] = await db.query(
+        "SELECT codFuncionario, modulo, podeVisualizar, podeCriarEditar FROM permissaoFuncionario WHERE codFuncionario IN (?)",
+        [codigos]
+    );
+    const map = new Map();
+    for (const r of rows) {
+        if (!map.has(r.codFuncionario)) map.set(r.codFuncionario, []);
+        map.get(r.codFuncionario).push(r);
+    }
+    return map;
+};
+
+const mapFuncionario = (f, permMap) => ({
+    codigo: f.codigo,
+    nome: f.nome,
+    email: f.email,
+    telefone: f.telefone,
+    codCargo: f.codCargo,
+    cargoNome: f.cargoNome,
+    status: f.status === 1,
+    dataCadastro: f.dataCadastro,
+    permissoes: linhasParaPermissoes((permMap && permMap.get(f.codigo)) || [])
+});
+
 // -=-=-=-=-= Função para buscar funcionario -=-=-=-=-=-=
 export const getFuncionario = async (req, res) => {
     try {
-        // Se não tem código, lista todos com nome do cargo
         if (req.params.codigo === undefined) {
             const [funcionarios] = await db.query(
                 `SELECT 
@@ -53,19 +129,8 @@ export const getFuncionario = async (req, res) => {
                 FROM funcionario 
                 LEFT JOIN cargo  ON funcionario.codCargo = cargo.codigo`
             );
-
-            return res.status(200).json(
-                funcionarios.map((f) => ({
-                    codigo: f.codigo,
-                    nome: f.nome,
-                    email: f.email,
-                    telefone: f.telefone,
-                    codCargo: f.codCargo,
-                    cargoNome: f.cargoNome,
-                    status: f.status === 1,
-                    dataCadastro: f.dataCadastro
-                }))
-            );
+            const permMap = await buscarPermissoesMap(funcionarios.map((f) => f.codigo));
+            return res.status(200).json(funcionarios.map((f) => mapFuncionario(f, permMap)));
         }
 
         const codigo = validarCodigo(req.params.codigo);
@@ -98,18 +163,8 @@ export const getFuncionario = async (req, res) => {
             });
         }
 
-        const f = funcionarios[0];
-
-        return res.status(200).json({
-            codigo: f.codigo,
-            nome: f.nome,
-            email: f.email,
-            telefone: f.telefone,
-            codCargo: f.codCargo,
-            cargoNome: f.cargoNome,
-            status: f.status === 1,
-            dataCadastro: f.dataCadastro
-        });
+        const permMap = await buscarPermissoesMap([codigo]);
+        return res.status(200).json(mapFuncionario(funcionarios[0], permMap));
     } 
     
     catch (error) {
@@ -123,7 +178,7 @@ export const getFuncionario = async (req, res) => {
 
 // -=-=-=-=-=--=-= Função para criar novos funcionarios -=-=-=-=-=-=-=
 export const createFuncionario = async (req, res) => {
-    const { nome, email, telefone, codCargo, senha, status } = req.body ?? {};
+    const { nome, email, telefone, codCargo, senha, status, permissoes } = req.body ?? {};
 
     // Validações
 
@@ -180,26 +235,37 @@ export const createFuncionario = async (req, res) => {
 
         // Hash da senha
         const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
+        const perms = normalizarPermissoes(permissoes);
 
-        // Insert
-        const [resultado] = await db.query(
-            `INSERT INTO funcionario (nome, email, telefone, codCargo, senha, status, dataCadastro) 
-             VALUES (?, ?, ?, ?, ?, ?, CURDATE())`,
-            [nomeFormatado, emailFormatado, telefoneFormatado, codCargo, senhaHash, status]
-        );
-
-        return res.status(201).json({
-            mensagem: "Funcionário cadastrado com sucesso!",
-            funcionario: {
-                codigo: resultado.insertId,
-                nome: nomeFormatado,
-                email: emailFormatado,
-                telefone: telefoneFormatado,
-                codCargo,
-                status,
-                dataCadastro: new Date().toISOString().split('T')[0]
-            }
-        });
+        const conn = await db.getConnection();
+        try {
+            await conn.beginTransaction();
+            const [resultado] = await conn.query(
+                `INSERT INTO funcionario (nome, email, telefone, codCargo, senha, status, dataCadastro) 
+                 VALUES (?, ?, ?, ?, ?, ?, CURDATE())`,
+                [nomeFormatado, emailFormatado, telefoneFormatado, codCargo, senhaHash, status]
+            );
+            await salvarPermissoes(conn, resultado.insertId, perms);
+            await conn.commit();
+            return res.status(201).json({
+                mensagem: "Funcionário cadastrado com sucesso!",
+                funcionario: {
+                    codigo: resultado.insertId,
+                    nome: nomeFormatado,
+                    email: emailFormatado,
+                    telefone: telefoneFormatado,
+                    codCargo,
+                    status,
+                    dataCadastro: new Date().toISOString().split('T')[0],
+                    permissoes: perms
+                }
+            });
+        } catch (e) {
+            await conn.rollback();
+            throw e;
+        } finally {
+            conn.release();
+        }
     } 
     
     catch (error) {
@@ -214,7 +280,7 @@ export const createFuncionario = async (req, res) => {
 // -=-=-=-=-=-=-=-= Função para atualizar funcionario -=-=-=-=--=
 export const updateFuncionario = async (req, res) => {
     const codigo = validarCodigo(req.params.codigo);
-    const { nome, email, telefone, codCargo, senha, status } = req.body ?? {};
+    const { nome, email, telefone, codCargo, senha, status, permissoes } = req.body ?? {};
 
     // Validações 
     if (!codigo) {
@@ -268,6 +334,7 @@ export const updateFuncionario = async (req, res) => {
         }
 
         // Montar query dinamicamente (senha opcional)
+        const perms = normalizarPermissoes(permissoes);
         let query = `UPDATE funcionario SET nome = ?, email = ?, telefone = ?, codCargo = ?, status = ?`;
         const params = [nomeFormatado, emailFormatado, telefoneFormatado, codCargo, status];
 
@@ -280,7 +347,18 @@ export const updateFuncionario = async (req, res) => {
         query += ` WHERE codigo = ?`;
         params.push(codigo);
 
-        await db.query(query, params);
+        const conn = await db.getConnection();
+        try {
+            await conn.beginTransaction();
+            await conn.query(query, params);
+            await salvarPermissoes(conn, codigo, perms);
+            await conn.commit();
+        } catch (e) {
+            await conn.rollback();
+            throw e;
+        } finally {
+            conn.release();
+        }
 
         return res.status(200).json({
             mensagem: "Funcionário atualizado com sucesso.",
@@ -290,7 +368,8 @@ export const updateFuncionario = async (req, res) => {
                 email: emailFormatado,
                 telefone: telefoneFormatado,
                 codCargo,
-                status
+                status,
+                permissoes: perms
             }
         });
     } 
@@ -320,6 +399,7 @@ export const deleteFuncionario = async (req, res) => {
             return res.status(404).json({ mensagem: "Funcionário não encontrado." });
         }
 
+        await db.query("DELETE FROM permissaoFuncionario WHERE codFuncionario = ?", [codigo]);
         await db.query("DELETE FROM funcionario WHERE codigo = ?", [codigo]);
 
         return res.status(200).json({ mensagem: "Funcionário excluído com sucesso." });

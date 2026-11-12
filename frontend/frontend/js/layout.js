@@ -1,12 +1,24 @@
 // Monta topo e menu lateral e liga o comportamento comum das páginas internas.
 // O <body> informa: data-raiz (caminho até a pasta frontend, ex.: "../../") e data-ativo (item do menu).
-(() => {
+(async () => {
   const $ = (id) => document.getElementById(id);
-  const sessao = Auth.exigir();
+  let sessao = Auth.exigir();
   if (!sessao) return;
 
   const raiz = document.body.dataset.raiz || "";
   const ativo = document.body.dataset.ativo || "";
+
+  try {
+    const cod = sessao.usuario?.codigo;
+    if (cod && typeof EquipeApi?.obter === "function") {
+      const atual = await EquipeApi.obter(cod);
+      if (atual && atual.permissoes) {
+        sessao = Auth.atualizarUsuario({ nome: atual.nome, email: atual.email, codCargo: atual.codCargo, permissoes: atual.permissoes }) || sessao;
+      }
+    }
+  } catch {}
+
+  if (ativo) { const ok = Auth.aplicarTela(ativo); if (!ok) return; }
 
   const ICONES = {
     home: '<path d="M3 11l9-8 9 8M5 10v10h14V10"/>',
@@ -34,8 +46,14 @@
     { id: "agenda", rotulo: "Agenda", href: "pages/agenda/agenda.html", icone: "cal" }
   ];
 
+  const podeVerItem = (id) => !id || Auth.podeVer(id);
+  const MENU_VIS = MENU.map((m) => m.itens
+    ? { ...m, itens: m.itens.filter((i) => podeVerItem(i.id)) }
+    : m
+  ).filter((m) => m.itens ? m.itens.length : podeVerItem(m.id));
+
   const atual = (i) => i.id === ativo ? ' aria-current="page"' : "";
-  const menuHtml = MENU.map((m) => m.itens
+  const menuHtml = MENU_VIS.map((m) => m.itens
     ? `<details class="group"${m.itens.some((i) => i.id === ativo) ? " open" : ""}>
          <summary>${ico(m.icone)}${m.rotulo}${ico("chev", "chev")}</summary>
          ${m.itens.map((i) => `<a href="${raiz}${i.href}"${i.id === ativo ? ' class="active"' : ""}${atual(i)}>${i.rotulo}</a>`).join("")}

@@ -72,6 +72,27 @@
   .tabela td.acoes{justify-content:flex-end}.tabela td.acoes::before{content:none}
 }
 
+/* ---- Permissões por tela (modal equipe) ---- */
+.perm-fieldset{border:1px solid var(--linha);border-radius:12px;padding:12px 14px;margin-top:4px}
+.perm-fieldset legend{font-size:14px;font-weight:700;padding:0 6px}
+.perm-hint{font-size:13px;color:var(--suave);margin-bottom:10px}
+.perm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.perm-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.perm-row label{font-size:14px;font-weight:600}
+.perm-row select{font:inherit;font-size:13px;padding:8px 10px;border:1.5px solid var(--linha);border-radius:8px;background:var(--card);color:var(--texto);min-width:170px}
+.perm-row select:focus{outline:0;border-color:var(--azul);box-shadow:0 0 0 3px rgba(35,64,232,.12)}
+@media (max-width:720px){.perm-grid{grid-template-columns:1fr}}
+
+/* ---- Modo somente visualização ---- */
+body.perm-view #btnNovo,
+body.perm-view .acoes,
+body.perm-view [data-acao],
+body.perm-view td.acoes,
+body.perm-view #btnSalvar,
+body.perm-view #btnExcluirOk { display: none !important; }
+body.perm-view .tabela th:last-child,
+body.perm-view .tabela td:last-child { display: none !important; }
+
 /* ---- Select dentro de formulário ---- */
 .field select{font:inherit;font-size:15px;padding:11px 14px;border:1.5px solid var(--linha);border-radius:10px;background:var(--card);color:var(--texto);width:100%}
 .field select:focus{outline:0;border-color:var(--azul);box-shadow:0 0 0 4px rgba(35,64,232,.15)}
