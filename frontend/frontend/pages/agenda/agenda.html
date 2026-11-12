@@ -22,7 +22,10 @@
     <main class="content">
       <div class="page-head">
         <h1>Agenda</h1>
-        <button class="btn" id="btnNovo" type="button">Novo compromisso</button>
+        <div class="page-head-acoes">
+          <button class="btn sec" id="btnTags" type="button">Tags</button>
+          <button class="btn" id="btnNovo" type="button">Novo compromisso</button>
+        </div>
       </div>
 
       <div class="notice" id="erroCarga" hidden></div>
@@ -135,6 +138,72 @@
       <div class="modal-acoes">
         <button type="button" class="btn sec" id="btnExcluirCancelar">Cancelar</button>
         <button type="submit" class="btn perigo" id="btnExcluirOk">Excluir</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Gerenciar tags -->
+  <dialog class="modal largo" id="modalTags" aria-labelledby="tagsTitulo">
+    <div style="padding:24px 28px">
+      <div class="page-head" style="margin-bottom:12px">
+        <h2 id="tagsTitulo" style="font-size:22px;font-weight:800;letter-spacing:-.02em">Tags</h2>
+        <button class="btn peq" id="btnNovaTag" type="button">Nova tag</button>
+      </div>
+      <p class="sub" style="margin-bottom:12px">Classifique os compromissos por cor e categoria.</p>
+      <section aria-label="Lista de tags">
+        <div class="tabela-wrap">
+          <table class="tabela">
+            <thead>
+              <tr><th>Tag</th><th>Cor</th><th>Status</th><th><span class="sr">Ações</span></th></tr>
+            </thead>
+            <tbody id="corpoTags"></tbody>
+          </table>
+        </div>
+        <div class="estado" id="estadoTags">Carregando tags…</div>
+      </section>
+      <div class="modal-acoes">
+        <button type="button" class="btn sec" id="btnFecharTags">Fechar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Criar / editar tag -->
+  <dialog class="modal" id="modalTagForm" aria-labelledby="tagFormTitulo">
+    <form id="formTag" novalidate>
+      <h2 id="tagFormTitulo">Nova tag</h2>
+      <p class="sub">Campos com * são obrigatórios.</p>
+      <p class="erro-form" id="erroTagForm" role="alert" hidden></p>
+      <div class="grid-form">
+        <div class="field full">
+          <label for="tagNome">Nome *</label>
+          <input id="tagNome" autocomplete="off" required>
+        </div>
+        <div class="field">
+          <label for="tagCor">Cor *</label>
+          <select id="tagCor" required></select>
+        </div>
+        <label class="check" style="align-self:end;margin-bottom:10px"><input type="checkbox" id="tagAtiva" checked> Tag ativa</label>
+        <div class="field full">
+          <label for="tagDescricao">Descrição</label>
+          <textarea id="tagDescricao"></textarea>
+        </div>
+      </div>
+      <div class="modal-acoes">
+        <button type="button" class="btn sec" id="btnCancelarTag">Cancelar</button>
+        <button type="submit" class="btn" id="btnSalvarTag">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Excluir tag -->
+  <dialog class="modal" id="modalTagExcluir" aria-labelledby="tagExcluirTitulo">
+    <form method="dialog" id="formTagExcluir" style="padding:28px">
+      <h2 id="tagExcluirTitulo">Excluir tag?</h2>
+      <p class="sub" id="tagExcluirTexto"></p>
+      <p class="erro-form" id="erroTagExcluir" role="alert" hidden></p>
+      <div class="modal-acoes">
+        <button type="button" class="btn sec" id="btnTagExcluirCancelar">Cancelar</button>
+        <button type="submit" class="btn perigo" id="btnTagExcluirOk">Excluir</button>
       </div>
     </form>
   </dialog>

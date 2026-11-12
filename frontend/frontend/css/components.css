@@ -19,6 +19,9 @@
 .btn.peq{padding:7px 14px;font-size:13px}
 .btn:disabled{opacity:.7;cursor:wait}
 
+/* ---- Cabeçalho de página com ações ---- */
+.page-head-acoes{display:flex;gap:10px;flex-wrap:wrap}
+
 /* ---- Barra de busca e filtros ---- */
 .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
 .toolbar input,.toolbar select{font:inherit;font-size:14px;padding:11px 14px;border:1px solid var(--linha);border-radius:10px;background:var(--card);color:var(--texto)}

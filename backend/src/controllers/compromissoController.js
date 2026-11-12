@@ -119,15 +119,7 @@ export const getCompromisso = async (req, res) => {
         }
 
         const compromisso = compromissos[0];
-
-        const [clientesAssoc] = await db.query(
-            `SELECT c.codigo, c.razaoSocial_NomeEmpresa
-             FROM clientecompromisso cc
-             JOIN cliente c ON cc.codCliente = c.codigo
-             WHERE cc.codCompromisso = ?`,
-            [codigo]
-        );
-        compromisso.clientes = clientesAssoc;
+        compromisso.clientes = [];
 
         const [participantes] = await db.query(
             `SELECT f.codigo, f.nome, f.email, f.telefone
@@ -353,17 +345,6 @@ export const createCompromisso = async (req, res) => {
 
         const compromissoId = resultado.insertId;
 
-        if (cliente && cliente.length > 0) {
-            const clienteUnicos = [...new Set(cliente.filter(c => c !== codCliente))];
-            if (clienteUnicos.length > 0) {
-                const values = clienteUnicos.map(cod => [compromissoId, cod]);
-                await db.query(
-                    `INSERT INTO clientecompromisso (codCompromisso, codCliente) VALUES ?`,
-                    [values]
-                );
-            }
-        }
-
         if (participantesEquipe && participantesEquipe.length > 0) {
             const values = participantesEquipe.map(cod => [compromissoId, cod]);
             await db.query(
@@ -395,14 +376,6 @@ export const createCompromisso = async (req, res) => {
             [compromissoId]
         );
 
-        const [clientesAssoc] = await db.query(
-            `SELECT c.codigo, c.razaoSocial_NomeEmpresa
-             FROM clientecompromisso cc
-             JOIN cliente c ON cc.codCliente = c.codigo
-             WHERE cc.codCompromisso = ?`,
-            [compromissoId]
-        );
-
         const [participantes] = await db.query(
             `SELECT f.codigo, f.nome, f.email
              FROM participantecompromisso pc
@@ -415,7 +388,7 @@ export const createCompromisso = async (req, res) => {
             mensagem: "Compromisso cadastrado com sucesso!",
             compromisso: {
                 ...novoCompromisso[0],
-                clientes: clientesAssoc,
+                clientes: [],
                 participantesEquipe: participantes
             }
         });
@@ -623,19 +596,6 @@ export const updateCompromisso = async (req, res) => {
             );
         }
 
-        if (cliente !== undefined) {
-            await db.query("DELETE FROM clientecompromisso WHERE codCompromisso = ?", [codigo]);
-            
-            const clienteUnicos = [...new Set(cliente.filter(c => c !== codCliente))];
-            if (clienteUnicos.length > 0) {
-                const values = clienteUnicos.map(cod => [codigo, cod]);
-                await db.query(
-                    `INSERT INTO clientecompromisso (codCompromisso, codCliente) VALUES ?`,
-                    [values]
-                );
-            }
-        }
-
         if (participantesEquipe !== undefined) {
             await db.query("DELETE FROM participantecompromisso WHERE codCompromisso = ?", [codigo]);
             
@@ -680,7 +640,6 @@ export const deleteCompromisso = async (req, res) => {
             });
         }
 
-        await db.query("DELETE FROM clientecompromisso WHERE codCompromisso = ?", [codigo]);
         await db.query("DELETE FROM participantecompromisso WHERE codCompromisso = ?", [codigo]);
         await db.query("DELETE FROM compromisso WHERE codigo = ?", [codigo]);
 

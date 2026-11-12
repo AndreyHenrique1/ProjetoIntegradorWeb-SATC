@@ -21,7 +21,10 @@
     <main class="content">
       <div class="page-head">
         <h1>Veículos</h1>
-        <button class="btn" id="btnNovo" type="button">Novo veículo</button>
+        <div class="page-head-acoes">
+          <button class="btn sec" id="btnTiposVeiculo" type="button">Tipos de veículos</button>
+          <button class="btn" id="btnNovo" type="button">Novo veículo</button>
+        </div>
       </div>
 
       <div class="toolbar">
@@ -102,6 +105,64 @@
       <div class="modal-acoes">
         <button type="button" class="btn sec" id="btnExcluirCancelar">Cancelar</button>
         <button type="submit" class="btn perigo" id="btnExcluirOk">Excluir</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Gerenciar tipos de veículo -->
+  <dialog class="modal largo" id="modalTipos" aria-labelledby="tiposTitulo">
+    <div style="padding:24px 28px">
+      <div class="page-head" style="margin-bottom:12px">
+        <h2 id="tiposTitulo" style="font-size:22px;font-weight:800;letter-spacing:-.02em">Tipos de veículos</h2>
+        <button class="btn peq" id="btnNovoTipo" type="button">Novo tipo</button>
+      </div>
+      <p class="sub" style="margin-bottom:12px">Cadastre e gerencie os tipos usados nos veículos.</p>
+      <section aria-label="Lista de tipos de veículos">
+        <div class="tabela-wrap">
+          <table class="tabela">
+            <thead>
+              <tr><th>Tipo</th><th>Status</th><th><span class="sr">Ações</span></th></tr>
+            </thead>
+            <tbody id="corpoTipos"></tbody>
+          </table>
+        </div>
+        <div class="estado" id="estadoTipos">Carregando tipos…</div>
+      </section>
+      <div class="modal-acoes">
+        <button type="button" class="btn sec" id="btnFecharTipos">Fechar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Criar / editar tipo de veículo -->
+  <dialog class="modal" id="modalTipoForm" aria-labelledby="tipoFormTitulo">
+    <form id="formTipo" novalidate>
+      <h2 id="tipoFormTitulo">Novo tipo de veículo</h2>
+      <p class="sub">Campos com * são obrigatórios.</p>
+      <p class="erro-form" id="erroTipoForm" role="alert" hidden></p>
+      <div class="grid-form">
+        <div class="field full">
+          <label for="tipoNome">Nome do tipo *</label>
+          <input id="tipoNome" autocomplete="off" placeholder="Ex.: TV, Rádio, Portal" required>
+        </div>
+        <label class="check full"><input type="checkbox" id="tipoAtivo" checked> Tipo ativo</label>
+      </div>
+      <div class="modal-acoes">
+        <button type="button" class="btn sec" id="btnCancelarTipo">Cancelar</button>
+        <button type="submit" class="btn" id="btnSalvarTipo">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Excluir tipo de veículo -->
+  <dialog class="modal" id="modalTipoExcluir" aria-labelledby="tipoExcluirTitulo">
+    <form method="dialog" id="formTipoExcluir" style="padding:28px">
+      <h2 id="tipoExcluirTitulo">Excluir tipo de veículo?</h2>
+      <p class="sub" id="tipoExcluirTexto"></p>
+      <p class="erro-form" id="erroTipoExcluir" role="alert" hidden></p>
+      <div class="modal-acoes">
+        <button type="button" class="btn sec" id="btnTipoExcluirCancelar">Cancelar</button>
+        <button type="submit" class="btn perigo" id="btnTipoExcluirOk">Excluir</button>
       </div>
     </form>
   </dialog>

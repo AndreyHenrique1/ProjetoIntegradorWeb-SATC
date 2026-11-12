@@ -1,4 +1,7 @@
 /* Específico da Agenda (pages/agenda/agenda.html). */
+.page-head-acoes{display:flex;gap:10px;flex-wrap:wrap}
+.tag-chip{display:inline-flex;align-items:center;gap:8px}
+.tag-dot{width:14px;height:14px;border-radius:50%;display:inline-block;flex:none;border:1px solid rgba(0,0,0,.08)}
 .agenda{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(300px,1fr);gap:20px;align-items:start}
 
 .mes-head{display:flex;align-items:center;gap:8px;margin-bottom:14px}

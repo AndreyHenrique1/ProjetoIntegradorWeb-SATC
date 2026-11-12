@@ -8,11 +8,13 @@
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   const diaDe = (iso) => Fmt.isoDia(new Date(iso));
 
-  let compromissos = [], tags = [], clientes = [], jornalistas = [], equipe = [];
+  let compromissos = [], tags = [], clientes = [], jornalistas = [], equipe = [], cores = [];
   let mes = new Date(); mes.setDate(1); mes.setHours(0, 0, 0, 0);
   let selecionado = hojeISO();
   let editando = null;
   let excluindo = null;
+  let editandoTag = null;
+  let excluindoTag = null;
 
   // ---------- dados ----------
   const filtrados = () => {
@@ -111,9 +113,22 @@
   async function carregar() {
     $("erroCarga").hidden = true;
     try {
-      [compromissos, tags, clientes, jornalistas, equipe] = await Promise.all([
-        CompromissoApi.listar(), TagApi.listar(), ClienteApi.listar(), JornalistaApi.listar(), EquipeApi.listar()
+      const [rComp, rTags, rCli, rJor, rEq, rCores] = await Promise.allSettled([
+        CompromissoApi.listar(), TagApi.listar(), ClienteApi.listar(), JornalistaApi.listar(), EquipeApi.listar(), TagApi.cores()
       ]);
+      compromissos = rComp.status === "fulfilled" ? rComp.value : [];
+      tags = rTags.status === "fulfilled" ? rTags.value : [];
+      clientes = rCli.status === "fulfilled" ? rCli.value : [];
+      jornalistas = rJor.status === "fulfilled" ? rJor.value : [];
+      equipe = rEq.status === "fulfilled" ? rEq.value : [];
+      cores = rCores.status === "fulfilled" ? rCores.value : [];
+      const falhas = [rComp, rTags, rCli, rJor, rEq].filter((r) => r.status === "rejected");
+      if (falhas.length) {
+        const msg = falhas.map((f) => f.reason?.message || "Erro ao carregar dados").join(" ");
+        $("erroCarga").innerHTML = `${esc(msg)} <button type="button" class="btn sec peq" id="tentar">Tentar de novo</button>`;
+        $("erroCarga").hidden = false;
+        $("tentar").addEventListener("click", carregar);
+      }
       montarFiltroTag();
       desenhar();
     } catch (e) {
@@ -155,11 +170,20 @@
   const marcados = (el) => [...el.querySelectorAll("input:checked")].map((i) => Number(i.value));
   const ativosOu = (lista, mantidos) => lista.filter((x) => x.status || mantidos.has(x.codigo));
 
+  function atualizarClientesAdicionais(extras) {
+    extras = extras instanceof Set ? extras : new Set(marcados($("listaClientes")));
+    const principal = $("cliente").value ? Number($("cliente").value) : null;
+    if (principal) extras.delete(principal);
+    const itens = ativosOu(clientes, extras).filter((x) => x.codigo !== principal);
+    montarChecks($("listaClientes"), itens, extras, (x) => x.razaoSocial_NomeEmpresa, "Nenhum outro cliente disponível.");
+  }
+
   function atualizarAmostra() {
     const t = tags.find((x) => String(x.codigo) === $("tag").value);
     $("amostraTag").style.background = t?.cor || "";
   }
   $("tag").addEventListener("change", atualizarAmostra);
+  $("cliente").addEventListener("change", () => atualizarClientesAdicionais());
 
   // Tira a marca de erro assim que o campo é corrigido
   ["titulo", "tag", "inicio", "fim"].forEach((id) => {
@@ -188,12 +212,12 @@
     $("modalTitulo").textContent = c ? "Editar compromisso" : "Novo compromisso";
 
     const extras = new Set((det?.clientes || []).map((x) => x.codigo));
+    if (c?.codCliente) extras.delete(c.codCliente);
     const equipeSel = new Set((det?.participantesEquipe || c?.participantesEquipe || []).map((x) => x.codigo));
 
     montarSelect($("tag"), ativosOu(tags, new Set([c?.codTag])), "Selecione a tag", (t) => t.nome);
     montarSelect($("cliente"), ativosOu(clientes, new Set([c?.codCliente])), "Nenhum", (x) => x.razaoSocial_NomeEmpresa);
     montarSelect($("jornalista"), ativosOu(jornalistas, new Set([c?.codJornalista])), "Nenhum", (x) => x.nome);
-    montarChecks($("listaClientes"), ativosOu(clientes, extras), extras, (x) => x.razaoSocial_NomeEmpresa, "Nenhum cliente cadastrado.");
     montarChecks($("listaEquipe"), ativosOu(equipe, equipeSel), equipeSel, (x) => x.nome, "Nenhum integrante cadastrado.");
 
     if (!tags.some((t) => t.status || t.codigo === c?.codTag)) {
@@ -213,6 +237,7 @@
     } else {
       [$("inicio").value, $("fim").value] = horariosPadrao(dia);
     }
+    atualizarClientesAdicionais(extras);
     atualizarAmostra();
     $("modal").showModal();
     $("modal").scrollTop = 0;
@@ -262,7 +287,7 @@
       cliente: marcados($("listaClientes")).filter((c) => c !== principal),
       participantesEquipe: marcados($("listaEquipe"))
     };
-    if (mudouDatas) { corpo.dataHoraInicio = Fmt.paraApi(ini); corpo.dataHoraFim = Fmt.paraApi(fim); }
+    if (!editando || mudouDatas) { corpo.dataHoraInicio = Fmt.paraApi(ini); corpo.dataHoraFim = Fmt.paraApi(fim); }
 
     $("btnSalvar").disabled = true;
     $("btnSalvar").textContent = "Salvando…";
@@ -329,6 +354,127 @@
       $("erroExcluir").hidden = false;
     } finally {
       $("btnExcluirOk").disabled = false;
+    }
+  });
+
+  // ---------- tags ----------
+  function montarSelectCores(sel, valor) {
+    sel.innerHTML = '<option value="">Selecione a cor</option>' +
+      (cores || []).map((c) => `<option value="${c.valor}">${esc(c.nome)}</option>`).join("");
+    if (valor) sel.value = valor;
+  }
+
+  function desenharTags() {
+    $("corpoTags").innerHTML = (tags || []).map((t) => `
+      <tr data-codigo="${t.codigo}">
+        <td data-label="Tag"><span class="tag-chip"><span class="tag-dot" style="background:${esc(t.cor || "#ccc")}"></span><strong>${esc(t.nome)}</strong></span></td>
+        <td data-label="Cor">${esc(t.corNome || t.cor || "")}</td>
+        <td data-label="Status"><span class="pill ${t.status ? "ativo" : "inativo"}">${t.status ? "Ativa" : "Inativa"}</span></td>
+        <td class="acoes">
+          <button type="button" class="btn sec peq" data-tag-acao="editar" aria-label="Editar ${esc(t.nome)}">Editar</button>
+          <button type="button" class="btn sec peq" data-tag-acao="excluir" aria-label="Excluir ${esc(t.nome)}">Excluir</button>
+        </td>
+      </tr>`).join("");
+    const estado = $("estadoTags");
+    estado.hidden = (tags || []).length > 0;
+    if (!(tags || []).length) estado.textContent = "Nenhuma tag cadastrada ainda.";
+  }
+
+  async function carregarTags() {
+    if ($("estadoTags")) { $("estadoTags").hidden = false; $("estadoTags").textContent = "Carregando tags…"; }
+    $("corpoTags").innerHTML = "";
+    try {
+      [tags, cores] = await Promise.all([TagApi.listar(), TagApi.cores()]);
+      montarFiltroTag();
+      desenhar();
+      desenharTags();
+    } catch (e) {
+      $("estadoTags").hidden = false;
+      $("estadoTags").innerHTML = `${esc(e.message)}<br><button type="button" class="btn sec peq" id="tentarTags">Tentar de novo</button>`;
+      $("tentarTags").addEventListener("click", carregarTags);
+    }
+  }
+
+  function abrirFormTag(t) {
+    editandoTag = t;
+    $("formTag").reset();
+    $("erroTagForm").hidden = true;
+    $("tagNome").removeAttribute("aria-invalid");
+    $("tagCor").removeAttribute("aria-invalid");
+    $("tagFormTitulo").textContent = t ? "Editar tag" : "Nova tag";
+    montarSelectCores($("tagCor"), t?.cor || "");
+    if (t) {
+      $("tagNome").value = t.nome ?? "";
+      $("tagDescricao").value = t.descricao ?? "";
+      $("tagAtiva").checked = !!t.status;
+    }
+    $("modalTagForm").showModal();
+    $("tagNome").focus();
+  }
+
+  $("formTag").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nome = $("tagNome").value.trim();
+    const cor = $("tagCor").value;
+    $("tagNome").removeAttribute("aria-invalid");
+    $("tagCor").removeAttribute("aria-invalid");
+    if (!nome) {
+      $("tagNome").setAttribute("aria-invalid", "true"); $("tagNome").focus();
+      $("erroTagForm").textContent = "Informe o nome da tag."; $("erroTagForm").hidden = false; return;
+    }
+    if (!cor) {
+      $("tagCor").setAttribute("aria-invalid", "true"); $("tagCor").focus();
+      $("erroTagForm").textContent = "Selecione uma cor."; $("erroTagForm").hidden = false; return;
+    }
+    $("erroTagForm").hidden = true;
+    const corpo = { nome, cor, descricao: $("tagDescricao").value.trim() || null, status: $("tagAtiva").checked };
+    $("btnSalvarTag").disabled = true; $("btnSalvarTag").textContent = "Salvando…";
+    try {
+      const eraEdicao = !!editandoTag;
+      if (editandoTag) await TagApi.atualizar(editandoTag.codigo, corpo);
+      else await TagApi.criar(corpo);
+      $("modalTagForm").close();
+      Ui.toast(eraEdicao ? "Tag atualizada com sucesso." : "Tag cadastrada com sucesso.");
+      await carregarTags();
+    } catch (err) {
+      $("erroTagForm").textContent = err.message;
+      $("erroTagForm").hidden = false;
+    } finally {
+      $("btnSalvarTag").disabled = false; $("btnSalvarTag").textContent = "Salvar";
+    }
+  });
+
+  $("btnTags").addEventListener("click", () => { $("modalTags").showModal(); carregarTags(); });
+  $("btnFecharTags").addEventListener("click", () => $("modalTags").close());
+  $("btnNovaTag").addEventListener("click", () => abrirFormTag(null));
+  $("btnCancelarTag").addEventListener("click", () => $("modalTagForm").close());
+
+  $("corpoTags").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-tag-acao]");
+    if (!btn) return;
+    const t = tags.find((x) => x.codigo === Number(btn.closest("tr").dataset.codigo));
+    if (!t) return;
+    if (btn.dataset.tagAcao === "editar") return abrirFormTag(t);
+    excluindoTag = t;
+    $("tagExcluirTexto").textContent = `“${t.nome}” será removida. Essa ação não pode ser desfeita.`;
+    $("erroTagExcluir").hidden = true;
+    $("modalTagExcluir").showModal();
+  });
+
+  $("btnTagExcluirCancelar").addEventListener("click", () => $("modalTagExcluir").close());
+  $("formTagExcluir").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    $("btnTagExcluirOk").disabled = true;
+    try {
+      await TagApi.excluir(excluindoTag.codigo);
+      $("modalTagExcluir").close();
+      Ui.toast("Tag excluída.");
+      await carregarTags();
+    } catch (err) {
+      $("erroTagExcluir").textContent = err.message;
+      $("erroTagExcluir").hidden = false;
+    } finally {
+      $("btnTagExcluirOk").disabled = false;
     }
   });
 

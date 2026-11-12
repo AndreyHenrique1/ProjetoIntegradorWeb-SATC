@@ -8,6 +8,8 @@
   let tipos = [];
   let editando = null;
   let excluindo = null;
+  let editandoTipo = null;
+  let excluindoTipo = null;
 
   // ---------- lista ----------
   function filtrados() {
@@ -183,6 +185,111 @@
       $("erroExcluir").hidden = false;
     } finally {
       $("btnExcluirOk").disabled = false;
+    }
+  });
+
+  // ---------- tipos de veículo ----------
+  function desenharTipos() {
+    $("corpoTipos").innerHTML = (tipos || []).map((t) => `
+      <tr data-codigo="${t.codigo}">
+        <td data-label="Tipo"><strong>${esc(t.nome)}</strong></td>
+        <td data-label="Status"><span class="pill ${t.status ? "ativo" : "inativo"}">${t.status ? "Ativo" : "Inativo"}</span></td>
+        <td class="acoes">
+          <button type="button" class="btn sec peq" data-tipo-acao="editar" aria-label="Editar ${esc(t.nome)}">Editar</button>
+          <button type="button" class="btn sec peq" data-tipo-acao="excluir" aria-label="Excluir ${esc(t.nome)}">Excluir</button>
+        </td>
+      </tr>`).join("");
+    const estado = $("estadoTipos");
+    estado.hidden = (tipos || []).length > 0;
+    if (!(tipos || []).length) estado.textContent = "Nenhum tipo cadastrado ainda.";
+  }
+
+  async function carregarTipos() {
+    if ($("estadoTipos")) { $("estadoTipos").hidden = false; $("estadoTipos").textContent = "Carregando tipos…"; }
+    $("corpoTipos").innerHTML = "";
+    try {
+      tipos = await TipoVeiculoApi.listar();
+      montarFiltroTipo();
+      desenhar();
+      desenharTipos();
+    } catch (e) {
+      $("estadoTipos").hidden = false;
+      $("estadoTipos").innerHTML = `${esc(e.message)}<br><button type="button" class="btn sec peq" id="tentarTipos">Tentar de novo</button>`;
+      $("tentarTipos").addEventListener("click", carregarTipos);
+    }
+  }
+
+  function abrirFormTipo(t) {
+    editandoTipo = t;
+    $("formTipo").reset();
+    $("erroTipoForm").hidden = true;
+    $("tipoNome").removeAttribute("aria-invalid");
+    $("tipoFormTitulo").textContent = t ? "Editar tipo de veículo" : "Novo tipo de veículo";
+    if (t) {
+      $("tipoNome").value = t.nome ?? "";
+      $("tipoAtivo").checked = !!t.status;
+    }
+    $("modalTipoForm").showModal();
+    $("tipoNome").focus();
+  }
+
+  $("formTipo").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nome = $("tipoNome").value.trim();
+    $("tipoNome").removeAttribute("aria-invalid");
+    if (!nome) {
+      $("tipoNome").setAttribute("aria-invalid", "true"); $("tipoNome").focus();
+      $("erroTipoForm").textContent = "Informe o nome do tipo."; $("erroTipoForm").hidden = false; return;
+    }
+    $("erroTipoForm").hidden = true;
+    const corpo = { nome, status: $("tipoAtivo").checked };
+    $("btnSalvarTipo").disabled = true; $("btnSalvarTipo").textContent = "Salvando…";
+    try {
+      const eraEdicao = !!editandoTipo;
+      if (editandoTipo) await TipoVeiculoApi.atualizar(editandoTipo.codigo, corpo);
+      else await TipoVeiculoApi.criar(corpo);
+      $("modalTipoForm").close();
+      Ui.toast(eraEdicao ? "Tipo atualizado com sucesso." : "Tipo cadastrado com sucesso.");
+      await carregarTipos();
+    } catch (err) {
+      $("erroTipoForm").textContent = err.message;
+      $("erroTipoForm").hidden = false;
+    } finally {
+      $("btnSalvarTipo").disabled = false; $("btnSalvarTipo").textContent = "Salvar";
+    }
+  });
+
+  $("btnTiposVeiculo").addEventListener("click", () => { $("modalTipos").showModal(); carregarTipos(); });
+  $("btnFecharTipos").addEventListener("click", () => $("modalTipos").close());
+  $("btnNovoTipo").addEventListener("click", () => abrirFormTipo(null));
+  $("btnCancelarTipo").addEventListener("click", () => $("modalTipoForm").close());
+
+  $("corpoTipos").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-tipo-acao]");
+    if (!btn) return;
+    const t = tipos.find((x) => x.codigo === Number(btn.closest("tr").dataset.codigo));
+    if (!t) return;
+    if (btn.dataset.tipoAcao === "editar") return abrirFormTipo(t);
+    excluindoTipo = t;
+    $("tipoExcluirTexto").textContent = `“${t.nome}” será removido. Essa ação não pode ser desfeita.`;
+    $("erroTipoExcluir").hidden = true;
+    $("modalTipoExcluir").showModal();
+  });
+
+  $("btnTipoExcluirCancelar").addEventListener("click", () => $("modalTipoExcluir").close());
+  $("formTipoExcluir").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    $("btnTipoExcluirOk").disabled = true;
+    try {
+      await TipoVeiculoApi.excluir(excluindoTipo.codigo);
+      $("modalTipoExcluir").close();
+      Ui.toast("Tipo excluído.");
+      await carregarTipos();
+    } catch (err) {
+      $("erroTipoExcluir").textContent = err.message;
+      $("erroTipoExcluir").hidden = false;
+    } finally {
+      $("btnTipoExcluirOk").disabled = false;
     }
   });
 
