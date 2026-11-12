@@ -11,6 +11,7 @@ import clienteRoutes from "./routes/clienteRoutes.js";
 import tagRoutes from "./routes/tagRoutes.js";
 import compromissoRoutes from "./routes/compromissoRoutes.js";
 import pendenciasRoutes from "./routes/pendenciasRoutes.js";
+import { authMiddleware } from "./middleware/authMiddleware.js";
 
 // Criar a aplicação express
 const app = express();
@@ -19,39 +20,22 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-//Rota de login
-app.use("/", loginRoutes)
+// Rota pública de autenticação
+app.use("/login", loginRoutes);
 
-//Rota de Equipes
-app.use("/usuario/equipe", equipeRoutes)
+// Rotas protegidas (exigem token JWT)
+app.use(authMiddleware);
 
-//Rota de cargos
+app.use("/usuario/equipe", equipeRoutes);
 app.use("/usuario/cargo", cargoRoutes);
-
-//Rota do dashboard
 app.use("/Dashboard", dashboardRoutes);
-
-// Rota Tipo de Veículo
 app.use("/contatos/tipoVeiculo", tipoVeiculoRoutes);
-
-// Rota de Veículo
 app.use("/contatos/veiculo", veiculoRoutes);
-
-// Rota de Jornalista
 app.use("/contatos/jornalista", jornalistaRoutes);
-
-// Rota de Cliente
 app.use("/contatos/cliente", clienteRoutes);
-
-// Rota de Tag
 app.use("/agenda/tag", tagRoutes);
-
-// Rota de Compromisso (Tela de agenda)
 app.use("/agenda/compromisso", compromissoRoutes);
-
-// Rota de Pendências
 app.use("/agenda/pendencias", pendenciasRoutes);
-
 
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);

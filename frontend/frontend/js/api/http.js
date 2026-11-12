@@ -19,7 +19,12 @@ const Http = {
       throw Object.assign(new Error("Não consegui conectar ao servidor."), { status: 0 });
     }
     const dados = await r.json().catch(() => ({}));
-    if (!r.ok) throw Object.assign(new Error(dados.mensagem || `Erro ${r.status}`), { status: r.status });
+    if (!r.ok) {
+      if (r.status === 401) {
+        Auth.sair();
+      }
+      throw Object.assign(new Error(dados.mensagem || `Erro ${r.status}`), { status: r.status });
+    }
     return dados;
   },
   get(caminho) { return this.enviar("GET", caminho); },

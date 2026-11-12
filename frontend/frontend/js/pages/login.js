@@ -4,7 +4,6 @@
   const form = $("loginForm"), erro = $("erro"), btn = $("entrar");
 
   if (Auth.obter()) location.replace("index.html");
-  $("devBanner").hidden = !Config.MODO_DEV;
 
   function mostrarErro(msg, campo) {
     erro.textContent = msg;
@@ -39,14 +38,8 @@
         return location.replace("index.html");
       }
       if ([400, 401, 403].includes(r.status)) return mostrarErro("E-mail ou senha incorretos.", $("senha"));
-      // 404/405: o back-end ainda não implementou o POST /login
-      if (Config.MODO_DEV) throw new Error("sem-rota");
       mostrarErro("Não foi possível entrar agora. Tente novamente em instantes.");
     } catch {
-      if (Config.MODO_DEV) {
-        Auth.salvar({ token: null, usuario: { nome: email.split("@")[0], email }, dev: true });
-        return location.replace("index.html");
-      }
       mostrarErro("Não consegui conectar ao servidor. Verifique sua conexão.");
     } finally {
       btn.disabled = false;
