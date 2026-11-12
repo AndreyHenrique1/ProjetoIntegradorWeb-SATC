@@ -20,7 +20,7 @@
   function desenhar(diaISO) {
     const ehHoje = diaISO === Fmt.isoDia(new Date());
     const sufixo = ehHoje ? "hoje" : "em " + Fmt.data(diaISO + "T12:00:00");
-    const doDia = dados.compromissos.filter((c) => Fmt.mesmoDia(c.dataHoraInicio, diaISO));
+    const doDia = dados.compromissos.filter((c) => c.status !== "Cancelado" && Fmt.mesmoDia(c.dataHoraInicio, diaISO));
 
     const minutos = doDia.reduce((t, c) => c.dataHoraFim ? t + Math.max(0, (new Date(c.dataHoraFim) - new Date(c.dataHoraInicio)) / 6e4) : t, 0);
     $("sAbertos").textContent = pad(dados.pendencias.length);

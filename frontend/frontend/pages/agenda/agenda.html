@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agenda · Alfa Comunicação e Conteúdo</title>
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/layout.css">
+  <link rel="stylesheet" href="../../css/components.css">
+  <link rel="stylesheet" href="../../css/agenda.css">
+</head>
+<body data-raiz="../../" data-ativo="agenda">
+  <header class="topbar" id="topbar"></header>
+
+  <div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="content">
+      <div class="page-head">
+        <h1>Agenda</h1>
+        <button class="btn" id="btnNovo" type="button">Novo compromisso</button>
+      </div>
+
+      <div class="notice" id="erroCarga" hidden></div>
+
+      <div class="toolbar">
+        <label for="filtroTag" class="sr">Tag</label>
+        <select id="filtroTag"><option value="">Todas as tags</option></select>
+        <label for="filtroStatus" class="sr">Status</label>
+        <select id="filtroStatus">
+          <option value="">Todos os status</option>
+          <option value="Agendado">Agendado</option>
+          <option value="Pendente">Pendente</option>
+          <option value="Concluido">Concluído</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+      </div>
+
+      <div class="agenda">
+        <section class="card" aria-label="Calendário do mês">
+          <div class="mes-head">
+            <h2 id="tituloMes" aria-live="polite"></h2>
+            <button type="button" class="btn sec peq" id="mesHoje">Hoje</button>
+            <button type="button" class="btn sec peq" id="mesAnt" aria-label="Mês anterior">‹</button>
+            <button type="button" class="btn sec peq" id="mesProx" aria-label="Próximo mês">›</button>
+          </div>
+          <div class="dias-semana" aria-hidden="true">
+            <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+          </div>
+          <div class="grade" id="grade"></div>
+        </section>
+
+        <section class="card painel-dia" aria-labelledby="tituloDia">
+          <h2 id="tituloDia"></h2>
+          <p class="qtd" id="qtdDia" aria-live="polite"></p>
+          <ul class="lista-dia" id="listaDia"></ul>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <!-- Criar / editar -->
+  <dialog class="modal largo" id="modal" aria-labelledby="modalTitulo">
+    <form id="form" novalidate>
+      <h2 id="modalTitulo">Novo compromisso</h2>
+      <p class="sub">Campos com * são obrigatórios.</p>
+      <p class="erro-form" id="erroForm" role="alert" hidden></p>
+
+      <div class="grid-form">
+        <div class="field full">
+          <label for="titulo">Título *</label>
+          <input id="titulo" autocomplete="off" placeholder="Ex.: Alinhamento de pauta trimestral" required>
+        </div>
+        <div class="field">
+          <label for="tag">Tag *</label>
+          <div class="sel-cor"><span class="amostra" id="amostraTag"></span><select id="tag" required></select></div>
+        </div>
+        <div class="field">
+          <label for="status">Status</label>
+          <select id="status">
+            <option value="Agendado">Agendado</option>
+            <option value="Pendente">Pendente</option>
+            <option value="Concluido">Concluído</option>
+            <option value="Cancelado">Cancelado</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="inicio">Início *</label>
+          <input id="inicio" type="datetime-local" required>
+        </div>
+        <div class="field">
+          <label for="fim">Fim *</label>
+          <input id="fim" type="datetime-local" required>
+        </div>
+        <div class="field">
+          <label for="cliente">Cliente principal</label>
+          <select id="cliente"></select>
+        </div>
+        <div class="field">
+          <label for="jornalista">Jornalista</label>
+          <select id="jornalista"></select>
+        </div>
+        <fieldset class="field full">
+          <legend>Clientes adicionais</legend>
+          <div class="lista-check" id="listaClientes"></div>
+        </fieldset>
+        <fieldset class="field full">
+          <legend>Participantes da equipe</legend>
+          <div class="lista-check" id="listaEquipe"></div>
+        </fieldset>
+        <div class="field full">
+          <label for="anotacoes">Anotações</label>
+          <textarea id="anotacoes"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-acoes">
+        <button type="button" class="btn sec" id="btnCancelar">Cancelar</button>
+        <button type="submit" class="btn" id="btnSalvar">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Excluir -->
+  <dialog class="modal" id="modalExcluir" aria-labelledby="excluirTitulo">
+    <form method="dialog" id="formExcluir" style="padding:28px">
+      <h2 id="excluirTitulo">Excluir compromisso?</h2>
+      <p class="sub" id="excluirTexto"></p>
+      <p class="erro-form" id="erroExcluir" role="alert" hidden></p>
+      <div class="modal-acoes">
+        <button type="button" class="btn sec" id="btnExcluirCancelar">Cancelar</button>
+        <button type="submit" class="btn perigo" id="btnExcluirOk">Excluir</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="../../js/config.js"></script>
+  <script src="../../js/utils/formatters.js"></script>
+  <script src="../../js/utils/ui.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/api/http.js"></script>
+  <script src="../../js/api/compromissoApi.js"></script>
+  <script src="../../js/api/tagApi.js"></script>
+  <script src="../../js/api/clienteApi.js"></script>
+  <script src="../../js/api/jornalistaApi.js"></script>
+  <script src="../../js/api/equipeApi.js"></script>
+  <script src="../../js/api/pendenciaApi.js"></script>
+  <script src="../../js/layout.js"></script>
+  <script src="../../js/pages/agenda.js"></script>
+</body>
+</html>
