@@ -23,11 +23,13 @@ const validarDataHora = (dataHora) => {
     return data >= agora && !isNaN(data.getTime());
 };
 
-// Validar se data fim é depois da data início
+// Validar se data fim é depois da data início (quando ambas informadas)
 const validarIntervalo = (inicio, fim) => {
-    if (!inicio || !fim) return false;
+    if (!inicio || !fim) return true;
     return new Date(fim) > new Date(inicio);
 };
+
+const temValor = (v) => v !== undefined && v !== null && String(v).trim() !== "";
 
 // Validar status
 const validarStatus = (status) => {
@@ -45,7 +47,16 @@ const validarArrayCodigos = (array) => {
 
 export const getCompromisso = async (req, res) => {
     try {
+        const usuarioCodigo = Number(req.usuario?.codigo);
+        const filtrarUsuario = Number.isInteger(usuarioCodigo) && usuarioCodigo > 0;
+
         if (req.params.codigo === undefined) {
+            const params = [];
+            let whereUsuario = "";
+            if (filtrarUsuario) {
+                whereUsuario = `WHERE EXISTS (SELECT 1 FROM participantecompromisso pc WHERE pc.codCompromisso = c.codigo AND pc.codFuncionario = ?)`;
+                params.push(usuarioCodigo);
+            }
             const [compromissos] = await db.query(
                 `SELECT 
                     c.codigo,
@@ -65,7 +76,9 @@ export const getCompromisso = async (req, res) => {
                 LEFT JOIN tag t ON c.codTag = t.codigo
                 LEFT JOIN cliente cl ON c.codCliente = cl.codigo
                 LEFT JOIN jornalista j ON c.codJornalista = j.codigo
-                ORDER BY c.dataHoraInicio`
+                ${whereUsuario}
+                ORDER BY c.dataHoraInicio`,
+                params
             );
 
             for (const compromisso of compromissos) {
@@ -89,6 +102,13 @@ export const getCompromisso = async (req, res) => {
             });
         }
 
+        const params = [codigo];
+        let whereUsuario = "";
+        if (filtrarUsuario) {
+            whereUsuario = " AND EXISTS (SELECT 1 FROM participantecompromisso pc WHERE pc.codCompromisso = c.codigo AND pc.codFuncionario = ?)";
+            params.push(usuarioCodigo);
+        }
+
         const [compromissos] = await db.query(
             `SELECT 
                 c.codigo,
@@ -108,8 +128,8 @@ export const getCompromisso = async (req, res) => {
             LEFT JOIN tag t ON c.codTag = t.codigo
             LEFT JOIN cliente cl ON c.codCliente = cl.codigo
             LEFT JOIN jornalista j ON c.codJornalista = j.codigo
-            WHERE c.codigo = ?`,
-            [codigo]
+            WHERE c.codigo = ?${whereUsuario}`,
+            params
         );
 
         if (compromissos.length === 0) {
@@ -241,16 +261,17 @@ export const createCompromisso = async (req, res) => {
         });
     }
 
-    if (!validarDataHora(dataHoraFim)) {
-        return res.status(400).json({
-            mensagem: "A data e hora de fim não pode ser no passado."
-        });
-    }
-
-    if (!validarIntervalo(dataHoraInicio, dataHoraFim)) {
-        return res.status(400).json({
-            mensagem: "A data e hora de fim deve ser posterior à data e hora de início."
-        });
+    if (temValor(dataHoraFim)) {
+        if (!validarDataHora(dataHoraFim)) {
+            return res.status(400).json({
+                mensagem: "A data e hora de fim não pode ser no passado."
+            });
+        }
+        if (!validarIntervalo(dataHoraInicio, dataHoraFim)) {
+            return res.status(400).json({
+                mensagem: "A data e hora de fim deve ser posterior à data e hora de início."
+            });
+        }
     }
 
     if (status && !validarStatus(status)) {
@@ -285,7 +306,8 @@ export const createCompromisso = async (req, res) => {
 
     const tituloFormatado = titulo.trim();
     const anotacoesFormatada = anotacoes?.trim() ? anotacoes.trim() : null;
-    const statusFormatado = status || 'Agendado';
+    const statusFormatado = status || 'Pendente';
+    const dataHoraFimValor = temValor(dataHoraFim) ? dataHoraFim : null;
 
     try {
         const [tagExiste] = await db.query("SELECT codigo FROM tag WHERE codigo = ?", [codTag]);
@@ -340,13 +362,17 @@ export const createCompromisso = async (req, res) => {
         const [resultado] = await db.query(
             `INSERT INTO compromisso (titulo, codTag, codCliente, codJornalista, dataHoraInicio, dataHoraFim, anotacoes, status)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [tituloFormatado, codTag, codCliente || null, codJornalista || null, dataHoraInicio, dataHoraFim, anotacoesFormatada, statusFormatado]
+            [tituloFormatado, codTag, codCliente || null, codJornalista || null, dataHoraInicio, dataHoraFimValor, anotacoesFormatada, statusFormatado]
         );
 
         const compromissoId = resultado.insertId;
 
-        if (participantesEquipe && participantesEquipe.length > 0) {
-            const values = participantesEquipe.map(cod => [compromissoId, cod]);
+        let participantes = Array.isArray(participantesEquipe) ? [...participantesEquipe] : [];
+        const criador = Number(req.usuario?.codigo);
+        if (Number.isInteger(criador) && criador > 0) participantes.push(criador);
+        participantes = [...new Set(participantes.map((c) => Number(c)).filter((c) => Number.isInteger(c) && c > 0))];
+        if (participantes.length > 0) {
+            const values = participantes.map(cod => [compromissoId, cod]);
             await db.query(
                 `INSERT INTO participantecompromisso (codCompromisso, codFuncionario) VALUES ?`,
                 [values]
@@ -376,7 +402,7 @@ export const createCompromisso = async (req, res) => {
             [compromissoId]
         );
 
-        const [participantes] = await db.query(
+        const [participantesOut] = await db.query(
             `SELECT f.codigo, f.nome, f.email
              FROM participantecompromisso pc
              JOIN funcionario f ON pc.codFuncionario = f.codigo
@@ -389,7 +415,7 @@ export const createCompromisso = async (req, res) => {
             compromisso: {
                 ...novoCompromisso[0],
                 clientes: [],
-                participantesEquipe: participantes
+                participantesEquipe: participantesOut
             }
         });
     } catch (error) {
@@ -451,15 +477,9 @@ export const updateCompromisso = async (req, res) => {
         });
     }
 
-    if (dataHoraFim !== undefined && !validarDataHora(dataHoraFim)) {
+    if (dataHoraFim !== undefined && temValor(dataHoraFim) && !validarDataHora(dataHoraFim)) {
         return res.status(400).json({
             mensagem: "A data e hora de fim não pode ser no passado."
-        });
-    }
-
-    if (dataHoraInicio !== undefined && dataHoraFim !== undefined && !validarIntervalo(dataHoraInicio, dataHoraFim)) {
-        return res.status(400).json({
-            mensagem: "A data e hora de fim deve ser posterior à data e hora de início."
         });
     }
 
@@ -494,10 +514,18 @@ export const updateCompromisso = async (req, res) => {
     }
 
     try {
-        const [compromissoExistente] = await db.query("SELECT codigo FROM compromisso WHERE codigo = ?", [codigo]);
+        const [compromissoExistente] = await db.query("SELECT codigo, dataHoraInicio, dataHoraFim FROM compromisso WHERE codigo = ?", [codigo]);
         if (compromissoExistente.length === 0) {
             return res.status(404).json({
                 mensagem: "Compromisso não encontrado."
+            });
+        }
+
+        const iniEfetivoUpd = dataHoraInicio !== undefined ? dataHoraInicio : compromissoExistente[0].dataHoraInicio;
+        const fimEfetivoUpd = dataHoraFim !== undefined ? (temValor(dataHoraFim) ? dataHoraFim : null) : compromissoExistente[0].dataHoraFim;
+        if (iniEfetivoUpd && fimEfetivoUpd && !validarIntervalo(iniEfetivoUpd, fimEfetivoUpd)) {
+            return res.status(400).json({
+                mensagem: "A data e hora de fim deve ser posterior à data e hora de início."
             });
         }
 
@@ -577,7 +605,7 @@ export const updateCompromisso = async (req, res) => {
         }
         if (dataHoraFim !== undefined) {
             campos.push("dataHoraFim = ?");
-            valores.push(dataHoraFim);
+            valores.push(temValor(dataHoraFim) ? dataHoraFim : null);
         }
         if (anotacoes !== undefined) {
             campos.push("anotacoes = ?");

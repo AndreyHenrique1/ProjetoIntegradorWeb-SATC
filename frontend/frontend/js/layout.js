@@ -71,7 +71,7 @@
 
   $("avatar").textContent = Auth.iniciais(sessao.usuario?.nome);
   $("avatar").title = sessao.usuario?.nome || "Usuário logado";
-  $("sair").addEventListener("click", (e) => { e.preventDefault(); Auth.sair(); });
+  $("sair").addEventListener("click", (e) => { e.preventDefault(); if (confirm("Deseja mesmo sair da sua conta?")) Auth.sair(); });
 
   const sidebar = $("sidebar"), menuBtn = $("menuBtn"), scrim = $("scrim");
   function menu(abrir) {

@@ -4,8 +4,8 @@ const Fmt = {
   pad: (n) => String(n).padStart(2, "0"),
   isoDia(d) { return `${d.getFullYear()}-${this.pad(d.getMonth() + 1)}-${this.pad(d.getDate())}`; },
   mesmoDia(iso, dia) { return !!iso && this.isoDia(new Date(iso)) === dia; },
-  data: (iso) => new Date(iso).toLocaleDateString("pt-BR"),
-  hora: (iso) => new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+  data: (iso) => iso ? new Date(iso).toLocaleDateString("pt-BR") : "–",
+  hora: (iso) => iso ? new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "–",
   // Texto branco ou escuro conforme a cor de fundo da tag
   corTexto(hex) {
     const m = /^#?([0-9a-f]{6})$/i.exec(hex || "");
@@ -20,5 +20,5 @@ const Fmt = {
     return `${this.isoDia(d)}T${this.pad(d.getHours())}:${this.pad(d.getMinutes())}`;
   },
   // "2026-11-12T14:00" -> "2026-11-12 14:00:00" (formato aceito pelo back-end/MySQL)
-  paraApi: (valorLocal) => valorLocal.replace("T", " ") + ":00"
+  paraApi: (valorLocal) => valorLocal ? valorLocal.replace("T", " ") + ":00" : null
 };

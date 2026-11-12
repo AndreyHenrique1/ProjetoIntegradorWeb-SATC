@@ -11,6 +11,7 @@ import clienteRoutes from "./routes/clienteRoutes.js";
 import tagRoutes from "./routes/tagRoutes.js";
 import compromissoRoutes from "./routes/compromissoRoutes.js";
 import pendenciasRoutes from "./routes/pendenciasRoutes.js";
+import historicoRoutes from "./routes/historicoRoutes.js";
 import { authMiddleware } from "./middleware/authMiddleware.js";
 
 // Criar a aplicação express
@@ -36,6 +37,7 @@ app.use("/contatos/cliente", clienteRoutes);
 app.use("/agenda/tag", tagRoutes);
 app.use("/agenda/compromisso", compromissoRoutes);
 app.use("/agenda/pendencias", pendenciasRoutes);
+app.use("/contatos/historico", historicoRoutes);
 
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);

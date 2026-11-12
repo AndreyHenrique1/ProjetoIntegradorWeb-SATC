@@ -81,7 +81,7 @@
             <span class="pill st-${esc(String(c.status).toLowerCase())}">${esc(ROTULO_STATUS[c.status] || c.status)}</span>
           </div>
           <strong>${esc(c.titulo)}</strong>
-          <small>${Fmt.hora(c.dataHoraInicio)} – ${Fmt.hora(c.dataHoraFim)}${quem ? " · " + quem : ""}</small>
+          <small>${Fmt.hora(c.dataHoraInicio)}${c.dataHoraFim ? " – " + Fmt.hora(c.dataHoraFim) : ""}${quem ? " · " + quem : ""}</small>
           ${equipeTxt ? `<small>Equipe: ${equipeTxt}</small>` : ""}
           ${c.anotacoes ? `<small>${esc(c.anotacoes)}</small>` : ""}
           <div class="item-acoes">
@@ -163,8 +163,11 @@
       itens.map((i) => `<option value="${i.codigo}">${esc(nomeFn(i))}${rotuloInativo(i)}</option>`).join("");
   }
   function montarChecks(el, itens, marcados, nomeFn, vazio) {
-    el.innerHTML = itens.length
-      ? itens.map((i) => `<label class="check mini"><input type="checkbox" value="${i.codigo}"${marcados.has(i.codigo) ? " checked" : ""}> ${esc(nomeFn(i))}${rotuloInativo(i)}</label>`).join("")
+    const unicos = [];
+    const vistos = new Set();
+    (itens || []).forEach((i) => { if (!vistos.has(i.codigo)) { vistos.add(i.codigo); unicos.push(i); } });
+    el.innerHTML = unicos.length
+      ? unicos.map((i) => `<label class="check mini"><input type="checkbox" value="${i.codigo}"${marcados.has(i.codigo) ? " checked" : ""}> ${esc(nomeFn(i))}${rotuloInativo(i)}</label>`).join("")
       : `<span class="vazio-lista">${vazio}</span>`;
   }
   const marcados = (el) => [...el.querySelectorAll("input:checked")].map((i) => Number(i.value));
@@ -213,7 +216,9 @@
 
     const extras = new Set((det?.clientes || []).map((x) => x.codigo));
     if (c?.codCliente) extras.delete(c.codCliente);
+    const eu = Auth.obter()?.usuario?.codigo;
     const equipeSel = new Set((det?.participantesEquipe || c?.participantesEquipe || []).map((x) => x.codigo));
+    if (!c && eu) equipeSel.add(Number(eu));
 
     montarSelect($("tag"), ativosOu(tags, new Set([c?.codTag])), "Selecione a tag", (t) => t.nome);
     montarSelect($("cliente"), ativosOu(clientes, new Set([c?.codCliente])), "Nenhum", (x) => x.razaoSocial_NomeEmpresa);
@@ -225,16 +230,25 @@
       $("erroForm").hidden = false;
     }
 
+    // manter status atual se for legado (ex.: Agendado), mesmo fora das opções padrão
+    const selStatus = $("status");
+    if (c?.status && ![...selStatus.options].some((o) => o.value === c.status)) {
+      const opt = document.createElement("option");
+      opt.value = c.status; opt.textContent = ROTULO_STATUS[c.status] || c.status;
+      selStatus.insertBefore(opt, selStatus.firstChild);
+    }
+
     if (c) {
       $("titulo").value = c.titulo ?? "";
       $("tag").value = c.codTag ?? "";
-      $("status").value = c.status ?? "Agendado";
+      $("status").value = c.status ?? "Pendente";
       $("inicio").value = Fmt.paraInputLocal(c.dataHoraInicio);
       $("fim").value = Fmt.paraInputLocal(c.dataHoraFim);
       $("cliente").value = c.codCliente ?? "";
       $("jornalista").value = c.codJornalista ?? "";
       $("anotacoes").value = c.anotacoes ?? "";
     } else {
+      $("status").value = "Pendente";
       [$("inicio").value, $("fim").value] = horariosPadrao(dia);
     }
     atualizarClientesAdicionais(extras);
@@ -252,7 +266,6 @@
       [c.titulo, c.titulo.value.trim().length > 0, "Informe o título do compromisso."],
       [c.tag, !!c.tag.value, "Selecione a tag."],
       [c.inicio, !!ini, "Informe a data e hora de início."],
-      [c.fim, !!fim, "Informe a data e hora de fim."],
       [c.fim, !ini || !fim || new Date(fim) > new Date(ini), "A data e hora de fim deve ser posterior à de início."],
       // o back-end recusa datas no passado, então só conferimos quando elas serão enviadas
       [c.inicio, !enviaDatas || !ini || new Date(ini) >= agora, "A data e hora de início não pode ser no passado."],
@@ -287,7 +300,10 @@
       cliente: marcados($("listaClientes")).filter((c) => c !== principal),
       participantesEquipe: marcados($("listaEquipe"))
     };
-    if (!editando || mudouDatas) { corpo.dataHoraInicio = Fmt.paraApi(ini); corpo.dataHoraFim = Fmt.paraApi(fim); }
+    if (!editando || mudouDatas) {
+      corpo.dataHoraInicio = Fmt.paraApi(ini);
+      corpo.dataHoraFim = Fmt.paraApi(fim); // null quando vazio
+    }
 
     $("btnSalvar").disabled = true;
     $("btnSalvar").textContent = "Salvando…";

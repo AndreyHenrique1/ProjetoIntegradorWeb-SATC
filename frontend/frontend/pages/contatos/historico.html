@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Histórico de relacionamento · Alfa Comunicação e Conteúdo</title>
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/layout.css">
+  <link rel="stylesheet" href="../../css/components.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link rel="stylesheet" href="../../css/historico.css">
+</head>
+<body data-raiz="../../" data-ativo="historico">
+  <header class="topbar" id="topbar"></header>
+
+  <div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="content">
+      <div class="page-head">
+        <h1>Histórico de relacionamento</h1>
+        <div class="page-head-acoes">
+          <button class="btn sec" id="btnExportar" type="button">Exportar PDF</button>
+        </div>
+      </div>
+
+      <div class="notice" id="erroCarga" hidden></div>
+
+      <section class="stats" aria-label="Indicadores do histórico">
+        <article class="stat">
+          <span class="stat-ico green"><svg class="ico"><use href="#i-clock"/></svg></span>
+          <p>Horas realizadas hoje</p><strong id="hHoje">–</strong>
+        </article>
+        <article class="stat">
+          <span class="stat-ico blue"><svg class="ico"><use href="#i-clock"/></svg></span>
+          <p>Horas realizadas esta semana</p><strong id="hSemana">–</strong>
+        </article>
+        <article class="stat">
+          <span class="stat-ico red"><svg class="ico"><use href="#i-chat"/></svg></span>
+          <p>Registros em aberto</p><strong id="hAbertos">–</strong>
+        </article>
+      </section>
+
+      <section class="card" aria-label="Filtros" style="margin-bottom:20px">
+        <form id="filtros" class="toolbar filtros-historico" novalidate>
+          <div class="field">
+            <label for="fInicio">Data/hora início</label>
+            <input id="fInicio" type="datetime-local">
+          </div>
+          <div class="field">
+            <label for="fFim">Data/hora fim</label>
+            <input id="fFim" type="datetime-local">
+          </div>
+          <div class="field">
+            <label for="fFuncionario">Funcionário</label>
+            <select id="fFuncionario"><option value="">Todos</option></select>
+          </div>
+          <div class="field">
+            <label for="fCliente">Cliente</label>
+            <select id="fCliente"><option value="">Todos</option></select>
+          </div>
+          <div class="field">
+            <label for="fVeiculo">Veículo</label>
+            <select id="fVeiculo"><option value="">Todos</option></select>
+          </div>
+          <div class="field">
+            <label for="fTag">Tag</label>
+            <select id="fTag"><option value="">Todas</option></select>
+          </div>
+          <div class="field">
+            <label for="fStatus">Status</label>
+            <select id="fStatus">
+              <option value="">Todos</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Concluido">Concluído</option>
+              <option value="Cancelado">Cancelado</option>
+              <option value="Agendado">Agendado</option>
+            </select>
+          </div>
+          <div class="acoes-filtro">
+            <button type="submit" class="btn peq">Filtrar</button>
+            <button type="button" class="btn sec peq" id="btnLimpar">Limpar</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card" aria-label="Registros do histórico" id="areaImpressao">
+        <div class="card-head">
+          <h2>Registros</h2>
+          <span class="total" id="total" aria-live="polite"></span>
+        </div>
+        <div class="tabela-wrap">
+          <table class="tabela" id="tabelaHistorico">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Tag</th>
+                <th>Título</th>
+                <th>Cliente</th>
+                <th>Veículo / Jornalista</th>
+                <th>Início</th>
+                <th>Fim</th>
+                <th>Total (h)</th>
+                <th>Participantes</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="corpo"></tbody>
+          </table>
+        </div>
+        <div class="estado" id="estado">Carregando histórico…</div>
+      </section>
+    </main>
+  </div>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <script src="../../js/config.js"></script>
+  <script src="../../js/utils/formatters.js"></script>
+  <script src="../../js/utils/ui.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/api/http.js"></script>
+  <script src="../../js/api/historicoApi.js"></script>
+  <script src="../../js/api/equipeApi.js"></script>
+  <script src="../../js/api/clienteApi.js"></script>
+  <script src="../../js/api/veiculoApi.js"></script>
+  <script src="../../js/api/tagApi.js"></script>
+  <script src="../../js/layout.js"></script>
+  <script src="../../js/pages/historico.js"></script>
+</body>
+</html>

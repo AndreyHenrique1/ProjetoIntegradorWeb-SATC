@@ -22,11 +22,11 @@
     const sufixo = ehHoje ? "hoje" : "em " + Fmt.data(diaISO + "T12:00:00");
     const doDia = dados.compromissos.filter((c) => c.status !== "Cancelado" && Fmt.mesmoDia(c.dataHoraInicio, diaISO));
 
-    const minutos = doDia.reduce((t, c) => c.dataHoraFim ? t + Math.max(0, (new Date(c.dataHoraFim) - new Date(c.dataHoraInicio)) / 6e4) : t, 0);
+    const minutos = doDia.reduce((t, c) => (c.status !== "Pendente" && c.dataHoraFim) ? t + Math.max(0, (new Date(c.dataHoraFim) - new Date(c.dataHoraInicio)) / 6e4) : t, 0);
     $("sAbertos").textContent = pad(dados.pendencias.length);
     $("sHoras").textContent = `${Math.floor(minutos / 60)}H ${pad(Math.round(minutos % 60))}M`;
     $("sComp").textContent = doDia.length;
-    $("lHoras").textContent = "Horas " + sufixo;
+    $("lHoras").textContent = "Horas realizadas " + sufixo;
     $("lComp").textContent = "Compromissos " + sufixo;
     $("tComp").textContent = "Compromissos " + sufixo;
     $("cCli").textContent = pad(dados.clientes.length);

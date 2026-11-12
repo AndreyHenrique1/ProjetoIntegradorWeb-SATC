@@ -11,6 +11,14 @@ const validarCodigo = (valor) => {
 // -=-=-=-=-= Listar pendências -=-=-=-=-=
 export const listarPendencias = async (req, res) => {
     try {
+        const usuarioCodigo = Number(req.usuario?.codigo);
+        const filtrarUsuario = Number.isInteger(usuarioCodigo) && usuarioCodigo > 0;
+        const params = [];
+        let whereUsuario = "";
+        if (filtrarUsuario) {
+            whereUsuario = "AND EXISTS (SELECT 1 FROM participantecompromisso pc WHERE pc.codCompromisso = c.codigo AND pc.codFuncionario = ?)";
+            params.push(usuarioCodigo);
+        }
         const [pendencias] = await db.query(
             `SELECT 
                 c.codigo,
@@ -29,8 +37,9 @@ export const listarPendencias = async (req, res) => {
             FROM compromisso c
             LEFT JOIN cliente cl ON c.codCliente = cl.codigo
             LEFT JOIN tag t ON c.codTag = t.codigo
-            WHERE c.status = 'Pendente'
-            ORDER BY c.dataHoraInicio`
+            WHERE c.status = 'Pendente' ${whereUsuario}
+            ORDER BY c.dataHoraInicio`,
+            params
         );
 
         return res.status(200).json(pendencias);
@@ -54,9 +63,17 @@ export const confirmarPendencia = async (req, res) => {
     }
 
     try {
+        const usuarioCodigo = Number(req.usuario?.codigo);
+        const filtrarUsuario = Number.isInteger(usuarioCodigo) && usuarioCodigo > 0;
+        const params = [codigo];
+        let whereUsuario = "";
+        if (filtrarUsuario) {
+            whereUsuario = " AND EXISTS (SELECT 1 FROM participantecompromisso pc WHERE pc.codCompromisso = compromisso.codigo AND pc.codFuncionario = ?)";
+            params.push(usuarioCodigo);
+        }
         const [pendenciaExistente] = await db.query(
-            "SELECT codigo, status FROM compromisso WHERE codigo = ?",
-            [codigo]
+            `SELECT codigo, status FROM compromisso WHERE codigo = ?${whereUsuario}`,
+            params
         );
 
         if (pendenciaExistente.length === 0) {

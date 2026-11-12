@@ -1,0 +1,17 @@
+.filtros-historico{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;align-items:end}
+.filtros-historico .field{margin:0}
+.filtros-historico .field label{font-size:13px}
+.filtros-historico .acoes-filtro{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.stats{grid-template-columns:repeat(3,1fr)}
+#tabelaHistorico th,#tabelaHistorico td{font-size:14px}
+.tag-chip{display:inline-flex;align-items:center;gap:8px}
+.tag-dot{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none;border:1px solid rgba(0,0,0,.08)}
+
+@media (max-width:1000px){.stats{grid-template-columns:1fr}}
+@media print{
+  body{background:#fff}
+  .topbar,.sidebar,.scrim,.page-head-acoes,.filtros-historico,.acoes-filtro,#erroCarga{display:none !important}
+  .shell{display:block}.content{padding:0;margin:0}
+  .card{box-shadow:none;border:1px solid #ddd}
+  .stats{grid-template-columns:repeat(3,1fr);margin-bottom:12px}
+}
