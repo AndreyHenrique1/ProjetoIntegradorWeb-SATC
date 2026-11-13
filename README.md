@@ -10,6 +10,7 @@
 
 [![Status](https://img.shields.io/badge/STATUS-EM%20DESENVOLVIMENTO-1f6f54?style=for-the-badge)]()
 [![Projeto](https://img.shields.io/badge/PROJETO%20INTEGRADOR-SATC-164a3a?style=for-the-badge)]()
+[![Acesso](https://img.shields.io/badge/ACESSO-SISTEMA%20ONLINE-2340e8?style=for-the-badge)](https://projetointegradorweb-satc.onrender.com/login.html)
 [![GitHub](https://img.shields.io/badge/VERSIONAMENTO-GITHUB-24292f?style=for-the-badge\&logo=github)]()
 
 </div>
@@ -23,6 +24,10 @@ Este repositório contém o desenvolvimento do **Projeto Integrador de Sistemas 
 A aplicação está sendo desenvolvida para a **Alfa Comunicação e Conteúdo**, com base no levantamento dos processos realizados junto à empresa e nas necessidades identificadas durante a análise.
 
 O objetivo é desenvolver uma solução que auxilie na **organização dos processos, centralização das informações e redução de atividades manuais e retrabalho**.
+
+## Acesso ao sistema
+
+O sistema está disponível em: **[https://projetointegradorweb-satc.onrender.com/login.html](https://projetointegradorweb-satc.onrender.com/login.html)**
 
 ---
 
@@ -91,11 +96,13 @@ A arquitetura do sistema será definida e documentada durante o desenvolvimento,
 
 | Camada | Tecnologia |
 | :------------- | :----------- |
-| Front-end | A definir |
+| Front-end | HTML, CSS, JavaScript |
 | Back-end | Node.js, Express 5 |
 | Banco de dados | MySQL 8, driver mysql2 |
+| Autenticação | JWT, bcrypt |
 | Validação de documentos | @fnando/cpf, @fnando/cnpj |
 | Versionamento | Git / GitHub |
+| Deploy | Render |
 
 ---
 

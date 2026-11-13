@@ -15,12 +15,12 @@ const validarCodigo = (valor) => {
     return Number.isInteger(codigo) && codigo > 0 ? codigo : null;
 };
 
-// Validar data/hora - não pode ser no passado
+// Validar data/hora - não pode estar no passado (tolerância de 2 minutos)
 const validarDataHora = (dataHora) => {
     if (!dataHora) return false;
     const data = new Date(dataHora);
     const agora = new Date();
-    return data >= agora && !isNaN(data.getTime());
+    return !isNaN(data.getTime()) && data.getTime() >= agora.getTime() - 2 * 60 * 1000;
 };
 
 // Validar se data fim é depois da data início (quando ambas informadas)

@@ -268,8 +268,8 @@
       [c.inicio, !!ini, "Informe a data e hora de início."],
       [c.fim, !ini || !fim || new Date(fim) > new Date(ini), "A data e hora de fim deve ser posterior à de início."],
       // o back-end recusa datas no passado, então só conferimos quando elas serão enviadas
-      [c.inicio, !enviaDatas || !ini || new Date(ini) >= agora, "A data e hora de início não pode ser no passado."],
-      [c.fim, !enviaDatas || !fim || new Date(fim) >= agora, "A data e hora de fim não pode ser no passado."]
+      [c.inicio, !enviaDatas || !ini || new Date(ini).getTime() >= agora.getTime() - 2 * 60 * 1000, "A data e hora de início não pode ser no passado."],
+      [c.fim, !enviaDatas || !fim || new Date(fim).getTime() >= agora.getTime() - 2 * 60 * 1000, "A data e hora de fim não pode ser no passado."]
     ];
     Object.values(c).forEach((i) => i.removeAttribute("aria-invalid"));
     const erro = regras.find(([, ok]) => !ok);
